@@ -7,13 +7,23 @@ import { Board } from "@/components/Board";
 import { Topbar } from "@/components/Topbar";
 import { SignInPrompt } from "@/components/SignInPrompt";
 
+type SearchParams = Record<string, string | string[]>;
+
 type PageProps = {
-  searchParams?: Record<string, string | string[]>;
+  searchParams?: SearchParams | Promise<SearchParams>;
 };
+
+async function resolveSearchParams(input?: SearchParams | Promise<SearchParams>) {
+  if (!input) return {} as SearchParams;
+  if (typeof (input as Promise<SearchParams>).then === "function") {
+    return ((await input) ?? {}) as SearchParams;
+  }
+  return input ?? {};
+}
 
 export default async function Home({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions);
-  const params = searchParams ?? {};
+  const params = await resolveSearchParams(searchParams);
 
   const query = typeof params.q === "string" ? params.q : "";
   const initialIssueRaw = typeof params.issue === "string" ? Number.parseInt(params.issue, 10) : NaN;
