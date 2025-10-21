@@ -24,11 +24,16 @@ export function Board({ initialColumns, owner, repo, initialIssueNumber }: Board
     moveIssueOptimistic,
     revertIssueMove,
     selectIssue,
+    resetDrawer,
   } = useBoardStore();
 
   useEffect(() => {
     setColumns(initialColumns);
   }, [initialColumns, setColumns]);
+
+  useEffect(() => {
+    resetDrawer();
+  }, [owner, repo, resetDrawer]);
 
   useEffect(() => {
     if (!initialIssueNumber) return;

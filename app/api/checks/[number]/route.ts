@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
-import { getEnv } from "@/lib/env";
 import { SAMPLE_RUNS } from "@/lib/fixtures";
 import type { WorkflowRunSummary } from "@/lib/types";
 
-const env = getEnv();
-
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ number: string }> },
+  { params }: { params: { number: string } },
 ) {
-  const { number: numberStr } = await params;
-  const number = Number.parseInt(numberStr, 10);
+  const number = Number.parseInt(params.number, 10);
   if (!Number.isInteger(number)) {
     return NextResponse.json({ error: "Invalid pull request number." }, { status: 400 });
   }
 
   const { searchParams } = new URL(request.url);
-  const owner = searchParams.get("owner") ?? env.GITHUB_OWNER;
-  const repo = searchParams.get("repo") ?? env.GITHUB_REPO;
+  const owner = searchParams.get("owner");
+  const repo = searchParams.get("repo");
 
   if (!owner || !repo) {
     return NextResponse.json(

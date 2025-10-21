@@ -8,8 +8,6 @@ const envSchema = z.object({
   GITHUB_OAUTH_CLIENT_ID: z.string().optional(),
   GITHUB_OAUTH_CLIENT_SECRET: z.string().optional(),
   GITHUB_INSTALLATION_ID: z.string().optional(),
-  GITHUB_OWNER: z.string().optional(),
-  GITHUB_REPO: z.string().optional(),
   ORCHESTRATOR_WORKFLOW: z
     .string()
     .default(".github/workflows/devflow.yml")
@@ -30,8 +28,6 @@ export function getEnv(): Env {
       GITHUB_OAUTH_CLIENT_ID: process.env.GITHUB_OAUTH_CLIENT_ID,
       GITHUB_OAUTH_CLIENT_SECRET: process.env.GITHUB_OAUTH_CLIENT_SECRET,
       GITHUB_INSTALLATION_ID: process.env.GITHUB_INSTALLATION_ID,
-      GITHUB_OWNER: process.env.GITHUB_OWNER,
-      GITHUB_REPO: process.env.GITHUB_REPO,
       ORCHESTRATOR_WORKFLOW: process.env.ORCHESTRATOR_WORKFLOW,
     });
   }

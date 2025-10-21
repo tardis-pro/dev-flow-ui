@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
-import { getEnv } from "@/lib/env";
 import { findPullRequestForIssue } from "@/lib/services/pr";
-
-const env = getEnv();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ number: string }> },
+  { params }: { params: { number: string } },
 ) {
-  const { number } = await params;
-  const issueNumber = Number.parseInt(number, 10);
+  const issueNumber = Number.parseInt(params.number, 10);
   if (!Number.isInteger(issueNumber)) {
     return NextResponse.json({ error: "Invalid issue number." }, { status: 400 });
   }
 
   const { searchParams } = new URL(request.url);
-  const owner = searchParams.get("owner") ?? env.GITHUB_OWNER;
-  const repo = searchParams.get("repo") ?? env.GITHUB_REPO;
+  const owner = searchParams.get("owner");
+  const repo = searchParams.get("repo");
 
   if (!owner || !repo) {
     return NextResponse.json(

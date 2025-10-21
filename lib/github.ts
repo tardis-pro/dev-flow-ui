@@ -151,23 +151,18 @@ export async function getOctokitForRequest(params: {
 
 export async function withOctokit<T>(
   params: {
-    owner?: string;
-    repo?: string;
+    owner: string;
+    repo: string;
     prefer?: "installation" | "user";
   },
   handler: (client: AuthenticatedOctokit, owner: string, repo: string) => Promise<T>,
 ): Promise<T> {
-  const owner = params.owner ?? env.GITHUB_OWNER;
-  const repo = params.repo ?? env.GITHUB_REPO;
-  if (!owner || !repo) {
-    throw new Error("Repository context is required. Provide owner and repo or configure env vars.");
-  }
   const { client } = await getOctokitForRequest({
-    owner,
-    repo,
+    owner: params.owner,
+    repo: params.repo,
     prefer: params.prefer,
   });
-  return handler(client, owner, repo);
+  return handler(client, params.owner, params.repo);
 }
 
 export type { AuthenticatedOctokit };

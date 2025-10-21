@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  /* @opennextjs/cloudflare handles output configuration */
 };
 
 export default nextConfig;

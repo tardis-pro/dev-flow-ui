@@ -55,11 +55,12 @@ GITHUB_INSTALLATION_ID=...
 GITHUB_OAUTH_CLIENT_ID=...
 GITHUB_OAUTH_CLIENT_SECRET=...
 
-# Repo defaults
-GITHUB_OWNER=your-username
-GITHUB_REPO=your-repo
+# Orchestrator workflow to dispatch
 ORCHESTRATOR_WORKFLOW=.github/workflows/orchestrator-multi-provider.yml
 ```
+
+Repositories are selected at runtime: once signed in, the repo picker shows
+every repository your GitHub token can access (user repos or installations).
 
 **Setting up GitHub App**: See the main [README.md](../README.md#github-app-setup-required-for-frontend) for detailed instructions on creating a GitHub App, generating the private key, and getting your Installation ID.
 

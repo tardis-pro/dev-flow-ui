@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
-import { getEnv } from "@/lib/env";
 import { detectIssueBranch, fetchFileIfExists } from "@/lib/repo";
-
-const env = getEnv();
 
 type OpenPrPayload = {
   owner?: string;
@@ -16,10 +13,9 @@ type OpenPrPayload = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ number: string }> },
+  { params }: { params: { number: string } },
 ) {
-  const { number } = await params;
-  const issueNumber = Number.parseInt(number, 10);
+  const issueNumber = Number.parseInt(params.number, 10);
   if (!Number.isInteger(issueNumber)) {
     return NextResponse.json({ error: "Invalid issue number." }, { status: 400 });
   }
@@ -33,8 +29,7 @@ export async function POST(
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
-  const owner = payload.owner ?? env.GITHUB_OWNER;
-  const repo = payload.repo ?? env.GITHUB_REPO;
+  const { owner, repo } = payload;
   if (!owner || !repo) {
     return NextResponse.json(
       { error: "owner and repo must be specified." },

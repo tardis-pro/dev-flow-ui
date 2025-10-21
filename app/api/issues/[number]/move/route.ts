@@ -7,9 +7,6 @@ import {
   type IssueStatus,
 } from "@/lib/labels";
 import { dispatchOrchestrator } from "@/lib/orchestrator";
-import { getEnv } from "@/lib/env";
-
-const env = getEnv();
 
 type MovePayload = {
   toStatus: IssueStatus;
@@ -19,10 +16,9 @@ type MovePayload = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ number: string }> },
+  { params }: { params: { number: string } },
 ) {
-  const { number: numberStr } = await params;
-  const number = Number.parseInt(numberStr, 10);
+  const number = Number.parseInt(params.number, 10);
   if (!Number.isInteger(number)) {
     return NextResponse.json({ error: "Invalid issue number." }, { status: 400 });
   }
@@ -41,11 +37,10 @@ export async function POST(
     );
   }
 
-  const owner = body.owner ?? env.GITHUB_OWNER;
-  const repo = body.repo ?? env.GITHUB_REPO;
+  const { owner, repo } = body;
   if (!owner || !repo) {
     return NextResponse.json(
-      { error: "owner and repo must be provided in body or env." },
+      { error: "owner and repo must be provided in the request body." },
       { status: 400 },
     );
   }

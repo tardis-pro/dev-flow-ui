@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
-import { getEnv } from "@/lib/env";
-
-const env = getEnv();
 
 type GeminiReviewPayload = {
   owner?: string;
@@ -16,10 +13,9 @@ const DEFAULT_MESSAGE =
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ number: string }> },
+  { params }: { params: { number: string } },
 ) {
-  const { number } = await params;
-  const pullNumber = Number.parseInt(number, 10);
+  const pullNumber = Number.parseInt(params.number, 10);
   if (!Number.isInteger(pullNumber)) {
     return NextResponse.json({ error: "Invalid pull request number." }, { status: 400 });
   }
@@ -33,8 +29,7 @@ export async function POST(
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
-  const owner = payload.owner ?? env.GITHUB_OWNER;
-  const repo = payload.repo ?? env.GITHUB_REPO;
+  const { owner, repo } = payload;
   if (!owner || !repo) {
     return NextResponse.json(
       { error: "owner and repo must be specified." },

@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getEnv } from "@/lib/env";
 import { ISSUE_STATUSES, type IssueStatus } from "@/lib/labels";
 import { fetchIssueSummaries, groupIssuesByStatus } from "@/lib/services/issues";
 import { sampleBoard } from "@/lib/fixtures";
 
-const env = getEnv();
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const owner = searchParams.get("owner") ?? env.GITHUB_OWNER;
-  const repo = searchParams.get("repo") ?? env.GITHUB_REPO;
+  const owner = searchParams.get("owner");
+  const repo = searchParams.get("repo");
   if (!owner || !repo) {
     return NextResponse.json(
-      { error: "owner and repo must be specified via query params or env vars." },
+      { error: "owner and repo must be specified via query params." },
       { status: 400 },
     );
   }

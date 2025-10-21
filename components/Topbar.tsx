@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Filter, Plus } from "lucide-react";
 
 type TopbarProps = {
-  owner: string;
-  repo: string;
+  owner?: string;
+  repo?: string;
   repoOptions: Array<{ owner: string; repo: string }>;
   searchQuery?: string;
   onCreateIssue?: () => void;
@@ -40,13 +40,18 @@ export function Topbar({
     const next = new URLSearchParams(params?.toString() ?? "");
     next.set("owner", selection.owner);
     next.set("repo", selection.repo);
+    next.delete("issue");
     updateQuery(next);
   }
 
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-xl">
       <div className="flex flex-wrap items-center gap-3">
-        <RepoPicker value={{ owner, repo }} options={repoOptions} onChange={handleRepoChange} />
+        <RepoPicker
+          value={owner && repo ? { owner, repo } : undefined}
+          options={repoOptions}
+          onChange={handleRepoChange}
+        />
         <div className="relative flex-1 min-w-[200px]">
           <Input
             placeholder="Search issues, labels, or assignees"
@@ -68,7 +73,9 @@ export function Topbar({
         <Button
           variant="default"
           className="rounded-full"
+          disabled={!owner || !repo}
           onClick={() => {
+            if (!owner || !repo) return;
             if (onCreateIssue) {
               onCreateIssue();
               return;

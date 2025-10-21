@@ -11,12 +11,16 @@ import {
 import { GitBranch } from "lucide-react";
 
 type RepoPickerProps = {
-  value: { owner: string; repo: string };
+  value?: { owner: string; repo: string };
   options: Array<{ owner: string; repo: string }>;
   onChange?: (value: { owner: string; repo: string }) => void;
 };
 
 export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
+  const hasSelection = Boolean(value);
+  const label = hasSelection ? `${value!.owner}/${value!.repo}` : "Select repository";
+  const disabled = options.length === 0;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -24,9 +28,12 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
           variant="outline"
           size="sm"
           className="gap-2 rounded-full border-slate-700 bg-slate-900"
+          disabled={disabled}
         >
           <GitBranch className="h-4 w-4" />
-          <span className="text-sm font-semibold">{value.owner}/{value.repo}</span>
+          <span className="text-sm font-semibold min-w-[160px] text-left">
+            {label}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-[220px]">

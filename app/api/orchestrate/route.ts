@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchOrchestrator } from "@/lib/orchestrator";
 import { ISSUE_STATUSES, WORK_TYPE_LABELS, type IssueStatus, type WorkType } from "@/lib/labels";
-import { getEnv } from "@/lib/env";
-
-const env = getEnv();
 
 type OrchestratePayload = {
   issueNumber: number;
@@ -45,19 +42,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const owner = body.owner ?? env.GITHUB_OWNER;
-  const repo = body.repo ?? env.GITHUB_REPO;
-  if (!owner || !repo) {
+  if (!body.owner || !body.repo) {
     return NextResponse.json(
-      { error: "owner and repo must be provided in body or env." },
+      { error: "owner and repo must be provided in the request body." },
       { status: 400 },
     );
   }
 
   try {
     await dispatchOrchestrator({
-      owner,
-      repo,
+      owner: body.owner,
+      repo: body.repo,
       issueNumber: body.issueNumber,
       status: body.status,
       workType: body.workType ?? null,
