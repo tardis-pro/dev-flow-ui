@@ -1,4 +1,4 @@
-name = "devflow-ui"
+name = "code"
 main = ".open-next/worker.js"
 compatibility_date = "2024-10-21"
 
