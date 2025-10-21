@@ -78,12 +78,14 @@ export function Board({ initialColumns, owner, repo, initialIssueNumber }: Board
     }
   }
 
+  const boardColumns = columns.length ? columns : initialColumns;
+
   return (
     <>
       <ScrollArea className="w-full flex-1">
         <DragDropContext onDragEnd={handleDrop}>
           <div className="flex min-h-[420px] gap-6 pb-6">
-            {columns.map((column) => (
+            {boardColumns.map((column) => (
               <Column
                 key={column.status}
                 column={column}

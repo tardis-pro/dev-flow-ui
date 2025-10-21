@@ -95,6 +95,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
   hydrateDrawer(data) {
     set((state) => ({
+      selectedIssue: data.issue ?? state.selectedIssue,
       drawerData: {
         ...(state.drawerData ?? {}),
         ...data,

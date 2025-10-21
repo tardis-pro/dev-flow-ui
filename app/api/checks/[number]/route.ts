@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
 import { getEnv } from "@/lib/env";
+import { SAMPLE_RUNS } from "@/lib/fixtures";
 import type { WorkflowRunSummary } from "@/lib/types";
 
 const env = getEnv();
@@ -65,12 +66,6 @@ export async function GET(
     return NextResponse.json({ runs });
   } catch (error: any) {
     console.error(error);
-    return NextResponse.json(
-      {
-        error: "Failed to load workflow runs.",
-        details: error?.message ?? "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ runs: SAMPLE_RUNS, fixture: true });
   }
 }

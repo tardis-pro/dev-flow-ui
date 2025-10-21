@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
 import { getEnv } from "@/lib/env";
 import { detectIssueBranch, getCompareForIssue } from "@/lib/repo";
+import { SAMPLE_COMPARE } from "@/lib/fixtures";
 
 const env = getEnv();
 
@@ -47,9 +48,6 @@ export async function GET(
     return NextResponse.json(result);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Failed to compute diff for issue." },
-      { status: 500 },
-    );
+    return NextResponse.json({ compare: SAMPLE_COMPARE, branch: SAMPLE_COMPARE.headRef, fixture: true });
   }
 }

@@ -60,11 +60,12 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
     if (!drawerData?.issue?.linkedPullRequest && !loading.pr) {
       void loadPullRequest();
     }
-    if (drawerData?.issue?.linkedPullRequest && !drawerData.checks && !loading.checks) {
-      void loadChecks(drawerData.issue.linkedPullRequest.number);
+    const pullNumber = drawerData?.issue?.linkedPullRequest?.number;
+    if (pullNumber && !drawerData.checks && !loading.checks) {
+      void loadChecks(pullNumber);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedIssue]);
+  }, [selectedIssue, drawerData?.issue?.linkedPullRequest?.number]);
 
   useEffect(() => {
     if (!selectedIssue) {

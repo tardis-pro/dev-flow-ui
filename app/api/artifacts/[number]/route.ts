@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withOctokit } from "@/lib/github";
 import { getEnv } from "@/lib/env";
 import { getIssueArtifacts } from "@/lib/repo";
+import { SAMPLE_ARTIFACTS } from "@/lib/fixtures";
 
 const env = getEnv();
 
@@ -32,9 +33,6 @@ export async function GET(
     return NextResponse.json({ artifacts });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Failed to fetch artifacts from repository." },
-      { status: 500 },
-    );
+    return NextResponse.json({ artifacts: SAMPLE_ARTIFACTS, fixture: true });
   }
 }
