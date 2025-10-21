@@ -42,7 +42,7 @@ frontend/
 
 Create `.env.local` (see `.env.example` for the full list):
 
-```
+```bash
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=replace-me
 
@@ -51,15 +51,17 @@ GITHUB_APP_ID=...
 GITHUB_APP_PRIVATE_KEY=...   # base64-encoded PEM
 GITHUB_INSTALLATION_ID=...
 
-# GitHub OAuth fallback
+# GitHub OAuth fallback (optional)
 GITHUB_OAUTH_CLIENT_ID=...
 GITHUB_OAUTH_CLIENT_SECRET=...
 
 # Repo defaults
-GITHUB_OWNER=tardis-pro
-GITHUB_REPO=navratna
-ORCHESTRATOR_WORKFLOW=.github/workflows/devflow.yml
+GITHUB_OWNER=your-username
+GITHUB_REPO=your-repo
+ORCHESTRATOR_WORKFLOW=.github/workflows/orchestrator-multi-provider.yml
 ```
+
+**Setting up GitHub App**: See the main [README.md](../README.md#github-app-setup-required-for-frontend) for detailed instructions on creating a GitHub App, generating the private key, and getting your Installation ID.
 
 ## Local Development
 
@@ -81,34 +83,65 @@ Open `http://localhost:3000` and sign in with GitHub. Drag-and-drop moves issues
 
 ## Deployment
 
-### Cloudflare Workers
+### Cloudflare Pages/Workers (Recommended)
 
-1. Install dependencies and create the Cloudflare bundle:
+The app is configured for Cloudflare deployment using `@opennextjs/cloudflare`.
+
+#### Option A: Direct Deploy with Wrangler
+
+1. **Install dependencies and build**:
 
    ```bash
    pnpm install
    pnpm cf:build
    ```
 
-   This emits the worker bundle and static assets into `.open-next/pages`.
+   This runs `next build` and processes output with OpenNext, emitting to `.open-next/worker/`.
 
-2. Preview locally (optional):
+2. **Preview locally** (optional):
 
    ```bash
    pnpm cf:dev
    ```
 
-   Wrangler serves the worker locally so you can verify GitHub OAuth redirects and API behaviour.
+   Test GitHub OAuth and API behavior locally before deploying.
 
-3. Deploy to Workers (replace the default name or environment as needed):
+3. **Deploy**:
 
    ```bash
-    pnpm cf:deploy
-    ```
+   pnpm cf:deploy
+   ```
 
-   Configure the environment variables from `.env.example` using `wrangler secret put` (for secrets such as `GITHUB_APP_PRIVATE_KEY`) or the Workers dashboard. Update `NEXTAUTH_URL` in `wrangler.toml`/secrets once you know the final domain (e.g., `https://devflow-ui.your-subdomain.workers.dev`).
+4. **Set environment variables**:
 
-You can still deploy to Vercel if you prefer—set the environment variables, connect the repo, and the Node runtime will handle the server routes.
+   Use `wrangler secret put` for sensitive values:
+   ```bash
+   echo "your-base64-key" | wrangler secret put GITHUB_APP_PRIVATE_KEY
+   echo "your-secret" | wrangler secret put NEXTAUTH_SECRET
+   ```
+
+   Or set via Cloudflare dashboard: **Workers & Pages** → Your project → **Settings** → **Environment Variables**.
+
+   Update `NEXTAUTH_URL` in `wrangler.toml` or as a secret once you know your final domain (e.g., `https://your-app.pages.dev`).
+
+#### Option B: Cloudflare Pages Dashboard
+
+1. **Connect GitHub repo** in Cloudflare Pages dashboard
+2. **Build settings**:
+   - Build command: `cd frontend && pnpm install && pnpm cf:build`
+   - Build output directory: `frontend/.open-next/worker`
+3. **Environment variables**: Add all variables from `.env.example` in the dashboard
+4. **Deploy**: Push to your connected branch
+
+### Vercel (Alternative)
+
+Set environment variables in Vercel project settings, connect the repo, and deploy.
+
+**Build settings**:
+- Framework: Next.js
+- Root Directory: `frontend`
+- Build Command: `pnpm build`
+- Install Command: `pnpm install`
 
 ## Security Notes
 
