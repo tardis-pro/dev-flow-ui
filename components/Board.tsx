@@ -14,9 +14,10 @@ type BoardProps = {
   initialColumns: IssueBoardColumn[];
   owner: string;
   repo: string;
+  initialIssueNumber?: number;
 };
 
-export function Board({ initialColumns, owner, repo }: BoardProps) {
+export function Board({ initialColumns, owner, repo, initialIssueNumber }: BoardProps) {
   const {
     columns,
     setColumns,
@@ -28,6 +29,16 @@ export function Board({ initialColumns, owner, repo }: BoardProps) {
   useEffect(() => {
     setColumns(initialColumns);
   }, [initialColumns, setColumns]);
+
+  useEffect(() => {
+    if (!initialIssueNumber) return;
+    const issue = initialColumns
+      .flatMap((column) => column.issues)
+      .find((item) => item.number === initialIssueNumber);
+    if (issue) {
+      selectIssue(issue);
+    }
+  }, [initialIssueNumber, initialColumns, selectIssue]);
 
   async function handleDrop(result: DropResult) {
     const { destination, source, draggableId } = result;

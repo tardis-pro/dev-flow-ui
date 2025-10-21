@@ -46,11 +46,7 @@ export function Topbar({
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-xl">
       <div className="flex flex-wrap items-center gap-3">
-        <RepoPicker
-          value={{ owner, repo }}
-          options={repoOptions}
-          onChange={onRepoChange}
-        />
+        <RepoPicker value={{ owner, repo }} options={repoOptions} onChange={handleRepoChange} />
         <div className="relative flex-1 min-w-[200px]">
           <Input
             placeholder="Search issues, labels, or assignees"
@@ -58,7 +54,13 @@ export function Topbar({
             onChange={(event) => {
               const query = event.target.value;
               setValue(query);
-              onSearch?.(query);
+              const next = new URLSearchParams(params?.toString() ?? "");
+              if (query) {
+                next.set("q", query);
+              } else {
+                next.delete("q");
+              }
+              updateQuery(next);
             }}
             className="rounded-full border-slate-700 bg-slate-900 pl-4"
           />
@@ -66,7 +68,14 @@ export function Topbar({
         <Button
           variant="default"
           className="rounded-full"
-          onClick={onCreateIssue}
+          onClick={() => {
+            if (onCreateIssue) {
+              onCreateIssue();
+              return;
+            }
+            const url = `https://github.com/${owner}/${repo}/issues/new`;
+            window.open(url, "_blank", "noopener,noreferrer");
+          }}
         >
           <Plus className="mr-2 h-4 w-4" /> New Issue
         </Button>

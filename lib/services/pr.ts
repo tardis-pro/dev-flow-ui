@@ -42,7 +42,7 @@ async function mapPullRequestToSummary(
     number: pull.number,
     title: pull.title,
     url: pull.html_url,
-    status: pull.state,
+    status: pull.merged ? "merged" : pull.state,
     mergeable: pull.mergeable_state ?? "unknown",
     reviewers,
     stateReason: pull.state_reason,

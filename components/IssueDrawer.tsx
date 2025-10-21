@@ -211,6 +211,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
     }
 
     const moved = moveIssueOptimistic(selectedIssue.number, next);
+    hydrateDrawer({ issue: { ...selectedIssue, status: next } });
     try {
       const response = await fetch(`/api/issues/${selectedIssue.number}/move`, {
         method: "POST",
@@ -230,6 +231,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
       if (moved) {
         revertIssueMove(selectedIssue.number, currentStatus);
       }
+      hydrateDrawer({ issue: { ...selectedIssue, status: currentStatus } });
       toast.error("Failed to move issue to the next stage.");
     }
   }
