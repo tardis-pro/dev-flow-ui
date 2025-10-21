@@ -1,10 +1,3 @@
-import { cloudflare } from "@opennextjs/cloudflare/config";
+import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 
-export default cloudflare({
-  outputDir: ".open-next",
-  sourcemap: true,
-  serve: {
-    // Ensure Pages receives prebuilt assets for static routes
-    trailingSlash: false,
-  },
-});
+export default defineCloudflareConfig();
