@@ -1,0 +1,6 @@
+name = "devflow-ui"
+compatibility_date = "2024-10-21"
+pages_build_output_dir = ".open-next/pages"
+
+[vars]
+NEXTAUTH_URL = "https://devflow-ui.pages.dev"
