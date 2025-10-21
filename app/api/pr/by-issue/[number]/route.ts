@@ -4,9 +4,10 @@ import { findPullRequestForIssue } from "@/lib/services/pr";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { number: string } },
+  { params }: { params: Promise<{ number: string }> },
 ) {
-  const issueNumber = Number.parseInt(params.number, 10);
+  const { number } = await params;
+  const issueNumber = Number.parseInt(number, 10);
   if (!Number.isInteger(issueNumber)) {
     return NextResponse.json({ error: "Invalid issue number." }, { status: 400 });
   }

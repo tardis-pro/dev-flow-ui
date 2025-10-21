@@ -5,9 +5,10 @@ import type { WorkflowRunSummary } from "@/lib/types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { number: string } },
+  { params }: { params: Promise<{ number: string }> },
 ) {
-  const number = Number.parseInt(params.number, 10);
+  const { number: numberStr } = await params;
+  const number = Number.parseInt(numberStr, 10);
   if (!Number.isInteger(number)) {
     return NextResponse.json({ error: "Invalid pull request number." }, { status: 400 });
   }

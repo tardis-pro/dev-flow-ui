@@ -4,9 +4,10 @@ import { getPullRequestSummary } from "@/lib/services/pr";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { number: string } },
+  { params }: { params: Promise<{ number: string }> },
 ) {
-  const pullNumber = Number.parseInt(params.number, 10);
+  const { number } = await params;
+  const pullNumber = Number.parseInt(number, 10);
   if (!Number.isInteger(pullNumber)) {
     return NextResponse.json({ error: "Invalid pull request number." }, { status: 400 });
   }
