@@ -81,8 +81,34 @@ Open `http://localhost:3000` and sign in with GitHub. Drag-and-drop moves issues
 
 ## Deployment
 
-- **Vercel**: set the environment variables above in your project, connect the repo, and deploy. Edge runtime is supported (route handlers only call GitHub server-side).
-- **Cloudflare Pages / Node adapters**: run `pnpm build` and deploy `.vercel/output` or the `.next` build artifacts with a Node 18+ runtime.
+### Cloudflare Pages / Workers
+
+1. Install dependencies and create the Cloudflare bundle:
+
+   ```bash
+   pnpm install
+   pnpm cf:build
+   ```
+
+   This emits the worker bundle and static assets into `.open-next/pages`.
+
+2. Preview locally (optional):
+
+   ```bash
+   pnpm cf:dev
+   ```
+
+   Wrangler serves the Pages build so you can verify GitHub OAuth redirects and API behaviour.
+
+3. Deploy to Pages (replace the project name with yours):
+
+   ```bash
+   pnpm cf:deploy -- --project-name devflow-ui
+   ```
+
+   Configure the environment variables from `.env.example` using the Pages dashboard or `wrangler secret put` for sensitive values such as `GITHUB_APP_PRIVATE_KEY`.
+
+You can still deploy to Vercel if you prefer—set the environment variables, connect the repo, and the Node runtime will handle the server routes.
 
 ## Security Notes
 

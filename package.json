@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cloudflare": "next build && npx @opennextjs/cloudflare",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "cf:build": "pnpm exec opennextjs-cloudflare build --skipWranglerConfigCheck",
+    "cf:dev": "pnpm exec wrangler pages dev .open-next/pages",
+    "cf:deploy": "pnpm exec wrangler pages deploy .open-next/pages"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
