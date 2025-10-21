@@ -81,7 +81,7 @@ Open `http://localhost:3000` and sign in with GitHub. Drag-and-drop moves issues
 
 ## Deployment
 
-### Cloudflare Pages / Workers
+### Cloudflare Workers
 
 1. Install dependencies and create the Cloudflare bundle:
 
@@ -98,15 +98,15 @@ Open `http://localhost:3000` and sign in with GitHub. Drag-and-drop moves issues
    pnpm cf:dev
    ```
 
-   Wrangler serves the Pages build so you can verify GitHub OAuth redirects and API behaviour.
+   Wrangler serves the worker locally so you can verify GitHub OAuth redirects and API behaviour.
 
-3. Deploy to Pages (replace the project name with yours):
+3. Deploy to Workers (replace the default name or environment as needed):
 
    ```bash
-   pnpm cf:deploy -- --project-name devflow-ui
-   ```
+    pnpm cf:deploy
+    ```
 
-   Configure the environment variables from `.env.example` using the Pages dashboard or `wrangler secret put` for sensitive values such as `GITHUB_APP_PRIVATE_KEY`.
+   Configure the environment variables from `.env.example` using `wrangler secret put` (for secrets such as `GITHUB_APP_PRIVATE_KEY`) or the Workers dashboard. Update `NEXTAUTH_URL` in `wrangler.toml`/secrets once you know the final domain (e.g., `https://devflow-ui.your-subdomain.workers.dev`).
 
 You can still deploy to Vercel if you prefer—set the environment variables, connect the repo, and the Node runtime will handle the server routes.
 

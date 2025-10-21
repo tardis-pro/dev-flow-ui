@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "cf:build": "pnpm exec opennextjs-cloudflare build --skipWranglerConfigCheck",
-    "cf:dev": "pnpm exec wrangler pages dev .open-next/pages",
-    "cf:deploy": "pnpm exec wrangler pages deploy .open-next/pages"
+    "cf:dev": "pnpm exec wrangler dev --config wrangler.toml",
+    "cf:deploy": "pnpm exec wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

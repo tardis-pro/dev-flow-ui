@@ -1,6 +1,10 @@
 name = "devflow-ui"
+main = ".open-next/worker.js"
 compatibility_date = "2024-10-21"
-pages_build_output_dir = ".open-next/pages"
+
+[site]
+bucket = ".open-next/assets"
 
 [vars]
-NEXTAUTH_URL = "https://devflow-ui.pages.dev"
+# Override during deploy; placeholder keeps Wrangler happy
+NEXTAUTH_URL = "https://devflow-ui.example.workers.dev"
