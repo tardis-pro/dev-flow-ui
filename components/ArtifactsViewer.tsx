@@ -6,25 +6,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ArtifactFile } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
+import type { HTMLAttributes } from "react";
 
-const components = {
-  h1: (props: any) => (
-    <h1 className="text-2xl font-semibold text-slate-100" {...props} />
+const markdownComponents: Components = {
+  h1: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
+    <h1 className="text-2xl font-semibold text-slate-100" {...props}>
+      {children}
+    </h1>
   ),
-  h2: (props: any) => (
-    <h2 className="mt-6 text-xl font-semibold text-slate-100" {...props} />
+  h2: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
+    <h2 className="mt-6 text-xl font-semibold text-slate-100" {...props}>
+      {children}
+    </h2>
   ),
-  pre: (props: any) => (
+  pre: ({ children, ...props }: HTMLAttributes<HTMLPreElement>) => (
     <pre
       className="mt-4 overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-100"
       {...props}
-    />
+    >
+      {children}
+    </pre>
   ),
-  code: (props: any) => (
-    <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm" {...props} />
+  code: ({ children, ...props }: HTMLAttributes<HTMLElement>) => (
+    <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm" {...props}>
+      {children}
+    </code>
   ),
 };
 
@@ -71,7 +81,7 @@ export function ArtifactsViewer({ artifacts, isLoading }: ArtifactsViewerProps) 
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                components={components as any}
+                components={markdownComponents}
               >
                 {artifact.content}
               </ReactMarkdown>

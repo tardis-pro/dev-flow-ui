@@ -22,7 +22,7 @@ export function PRPanel({ pullRequest, isLoading, onRefresh }: PRPanelProps) {
       <div className="flex flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-800/80 bg-slate-900/60 p-10 text-center text-sm text-slate-400">
         <p>No pull request linked yet.</p>
         <p className="text-xs text-slate-500">
-          Use "Open/Update PR" below to spin one up from the nav branch.
+          Use &ldquo;Open/Update PR&rdquo; below to spin one up from the nav branch.
         </p>
       </div>
     );

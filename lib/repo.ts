@@ -2,6 +2,12 @@ import type { AuthenticatedOctokit } from "@/lib/github";
 import type { ArtifactFile, CompareSummary } from "@/lib/types";
 import { WORK_TYPE_LABELS } from "@/lib/labels";
 
+type ApiError = { status?: number };
+
+function isGitHubError(error: unknown): error is ApiError {
+  return typeof error === "object" && error !== null && "status" in error;
+}
+
 export async function fetchFileIfExists(
   octokit: AuthenticatedOctokit,
   owner: string,
@@ -30,8 +36,8 @@ export async function fetchFileIfExists(
       content,
       sha: response.data.sha,
     };
-  } catch (error: any) {
-    if (error?.status === 404) {
+  } catch (error: unknown) {
+    if (isGitHubError(error) && error.status === 404) {
       return null;
     }
     throw error;
@@ -77,7 +83,7 @@ export async function detectIssueBranch(
   issueNumber: number,
   workType?: string | null,
 ) {
-  const typePrefix = workType && WORK_TYPE_LABELS.includes(workType as any) ? `${workType}/` : "";
+  const typePrefix = workType && WORK_TYPE_LABELS.includes(workType as typeof WORK_TYPE_LABELS[number]) ? `${workType}/` : "";
   const defaultSlug = `${issueNumber}`.padStart(0, "0");
   const candidates = [
     `nav/${workType ?? "feature"}-${issueNumber}`,
@@ -90,8 +96,8 @@ export async function detectIssueBranch(
     try {
       await octokit.repos.getBranch({ owner, repo, branch });
       return branch;
-    } catch (error: any) {
-      if (error?.status !== 404) {
+    } catch (error: unknown) {
+      if (isGitHubError(error) && error.status !== 404) {
         throw error;
       }
     }

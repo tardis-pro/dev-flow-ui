@@ -26,19 +26,6 @@ type BoardState = {
   resetDrawer: () => void;
 };
 
-function updateColumnIssue(
-  columns: IssueBoardColumn[],
-  issueNumber: number,
-  callback: (issue: IssueSummary) => IssueSummary,
-) {
-  return columns.map((column) => ({
-    ...column,
-    issues: column.issues.map((issue) =>
-      issue.number === issueNumber ? callback(issue) : issue,
-    ),
-  }));
-}
-
 export const useBoardStore = create<BoardState>((set, get) => ({
   columns: [],
   isLoading: false,

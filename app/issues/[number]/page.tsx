@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 
 type IssuePageProps = {
-  params: { number: string };
-  searchParams?: Record<string, string | string[]>;
+  params: Promise<{ number: string }>;
+  searchParams?: Promise<Record<string, string | string[]>>;
 };
 
-export default function IssuePage({ params, searchParams }: IssuePageProps) {
+export default async function IssuePage({ params, searchParams }: IssuePageProps) {
+  const { number } = await params;
+  const searchParamsResolved = await searchParams;
   const target = new URLSearchParams(
-    Object.entries(searchParams ?? {}).reduce<Record<string, string>>((acc, [key, value]) => {
+    Object.entries(searchParamsResolved ?? {}).reduce<Record<string, string>>((acc, [key, value]) => {
       if (Array.isArray(value)) {
         if (value.length) acc[key] = value[0];
       } else if (value) {
@@ -16,6 +18,6 @@ export default function IssuePage({ params, searchParams }: IssuePageProps) {
       return acc;
     }, {}),
   );
-  target.set("issue", params.number);
+  target.set("issue", number);
   redirect(`/?${target.toString()}`);
 }

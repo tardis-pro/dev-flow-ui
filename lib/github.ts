@@ -2,7 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { throttling } from "@octokit/plugin-throttling";
 import { createAppAuth } from "@octokit/auth-app";
-import type { EndpointOptions, OctokitResponse } from "@octokit/types";
+import type { EndpointOptions } from "@octokit/types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
@@ -13,9 +13,10 @@ const THROTTLE_OPTIONS = {
   onRateLimit: (
     retryAfter: number,
     options: EndpointOptions,
-    octokit: Octokit,
+    octokit: InstanceType<typeof BaseOctokit>,
     retryCount: number,
   ) => {
+    void octokit;
     if (retryCount < 2) {
       console.warn(
         `Request quota exhausted for request ${options.method} ${options.url}. Retrying in ${retryAfter} seconds.`,
@@ -27,8 +28,9 @@ const THROTTLE_OPTIONS = {
   onSecondaryRateLimit: (
     retryAfter: number,
     options: EndpointOptions,
-    octokit: Octokit,
+    octokit: InstanceType<typeof BaseOctokit>,
   ) => {
+    void octokit;
     console.warn(
       `Secondary rate limit triggered for request ${options.method} ${options.url}.`,
     );
@@ -55,13 +57,13 @@ function createOctokit(auth: string | AppAuthOptions) {
   if (typeof auth === "string") {
     return new BaseOctokit({
       auth,
-      throttle: THROTTLE_OPTIONS,
+      throttle: THROTTLE_OPTIONS as never,
     });
   }
   return new BaseOctokit({
     authStrategy: createAppAuth,
     auth,
-    throttle: THROTTLE_OPTIONS,
+    throttle: THROTTLE_OPTIONS as never,
   });
 }
 

@@ -8,13 +8,13 @@ import { Topbar } from "@/components/Topbar";
 import { SignInPrompt } from "@/components/SignInPrompt";
 
 type PageProps = {
-  searchParams?: Record<string, string | string[]>;
+  searchParams?: Promise<Record<string, string | string[]>>;
 };
 
 export default async function Home({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions);
   const env = getEnv();
-  const params = searchParams ?? {};
+  const params = (await searchParams) ?? {};
 
   const ownerParam = typeof params.owner === "string" ? params.owner : env.GITHUB_OWNER;
   const repoParam = typeof params.repo === "string" ? params.repo : env.GITHUB_REPO;

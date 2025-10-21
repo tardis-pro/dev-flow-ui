@@ -11,7 +11,7 @@ import { DiffViewer } from "@/components/DiffViewer";
 import { PRPanel } from "@/components/PRPanel";
 import { ChecksPanel } from "@/components/ChecksPanel";
 import { useBoardStore } from "@/lib/stores/board-store";
-import { ISSUE_STATUSES, WORK_TYPE_LABELS, nextStatus, type IssueStatus } from "@/lib/labels";
+import { WORK_TYPE_LABELS, nextStatus } from "@/lib/labels";
 import { toast } from "sonner";
 
 type IssueDrawerProps = {

@@ -19,9 +19,10 @@ type MovePayload = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { number: string } },
+  { params }: { params: Promise<{ number: string }> },
 ) {
-  const number = Number.parseInt(params.number, 10);
+  const { number: numberStr } = await params;
+  const number = Number.parseInt(numberStr, 10);
   if (!Number.isInteger(number)) {
     return NextResponse.json({ error: "Invalid issue number." }, { status: 400 });
   }
@@ -59,7 +60,9 @@ export async function POST(
           issue_number: number,
         });
 
-        const labels = (data.labels ?? []).map((label: any) => label.name).filter(Boolean) as string[];
+        const labels = (data.labels ?? [])
+          .map((label) => (typeof label === "string" ? label : label.name ?? ""))
+          .filter((name): name is string => Boolean(name));
         const filtered = labels.filter((label) => !label.startsWith("status:"));
         const updatedLabels = [...filtered, statusToLabel(body.toStatus)];
 

@@ -7,6 +7,7 @@ import {
   type IssueStatus,
 } from "@/lib/labels";
 import type { IssueSummary, IssueBoardColumn } from "@/lib/types";
+import type { RestEndpointMethodTypes } from "@octokit/rest";
 
 type FetchIssueParams = {
   owner: string;
@@ -19,12 +20,18 @@ type FetchIssueParams = {
   query?: string | null;
 };
 
-export function mapIssueToSummary(issue: any, owner: string, repo: string): IssueSummary {
+type IssueResponseItem = RestEndpointMethodTypes["issues"]["listForRepo"]["response"]["data"][number];
+
+export function mapIssueToSummary(issue: IssueResponseItem, owner: string, repo: string): IssueSummary {
   const labels = issue.labels ?? [];
-  const status = parseStatus(labels);
+  const status = parseStatus(
+    labels.map((label) =>
+      typeof label === "string" ? { name: label } : { name: label.name ?? undefined },
+    ),
+  );
   const workTypes = labels
-    .map((label: any) => label.name ?? label)
-    .filter((name: string | undefined | null): name is string =>
+    .map((label) => (typeof label === "string" ? label : label.name ?? ""))
+    .filter((name): name is string =>
       Boolean(name && WORK_TYPE_LABELS.includes(name as (typeof WORK_TYPE_LABELS)[number])),
     ) as IssueSummary["workTypes"];
 
@@ -35,11 +42,11 @@ export function mapIssueToSummary(issue: any, owner: string, repo: string): Issu
     url: issue.html_url,
     status,
     workTypes,
-    labels: labels.map((label: any) => ({
-      name: label.name ?? label,
-      color: label.color,
+    labels: labels.map((label) => ({
+      name: typeof label === "string" ? label : label.name ?? "",
+      color: typeof label === "string" ? undefined : label.color,
     })),
-    assignees: (issue.assignees ?? []).map((assignee: any) => ({
+    assignees: (issue.assignees ?? []).map((assignee) => ({
       login: assignee.login,
       avatarUrl: assignee.avatar_url,
     })),
@@ -103,7 +110,15 @@ export async function fetchIssueSummaries({
     }
 
     if (statuses.length) {
-      filtered = filtered.filter((issue) => statuses.includes(parseStatus(issue.labels ?? [])));
+      filtered = filtered.filter((issue) =>
+        statuses.includes(
+          parseStatus(
+            (issue.labels ?? []).map((label) =>
+              typeof label === "string" ? { name: label } : { name: label.name ?? undefined },
+            ),
+          ),
+        ),
+      );
     }
 
     return filtered.map((issue) => mapIssueToSummary(issue, owner, repo));

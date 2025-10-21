@@ -16,9 +16,10 @@ const DEFAULT_MESSAGE =
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { number: string } },
+  { params }: { params: Promise<{ number: string }> },
 ) {
-  const pullNumber = Number.parseInt(params.number, 10);
+  const { number } = await params;
+  const pullNumber = Number.parseInt(number, 10);
   if (!Number.isInteger(pullNumber)) {
     return NextResponse.json({ error: "Invalid pull request number." }, { status: 400 });
   }
@@ -53,12 +54,12 @@ export async function POST(
     });
 
     return NextResponse.json({ ok: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     return NextResponse.json(
       {
         error: "Failed to request Gemini review.",
-        details: error?.message ?? "Unknown error.",
+        details: error instanceof Error ? error.message : "Unknown error.",
       },
       { status: 500 },
     );

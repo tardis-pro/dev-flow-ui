@@ -16,9 +16,10 @@ type OpenPrPayload = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { number: string } },
+  { params }: { params: Promise<{ number: string }> },
 ) {
-  const issueNumber = Number.parseInt(params.number, 10);
+  const { number } = await params;
+  const issueNumber = Number.parseInt(number, 10);
   if (!Number.isInteger(issueNumber)) {
     return NextResponse.json({ error: "Invalid issue number." }, { status: 400 });
   }
@@ -52,16 +53,16 @@ export async function POST(
         issue_number: issueNumber,
       });
 
+      const statusLabel = issue.data.labels?.find((label) =>
+        (typeof label === "string" ? label : label.name)?.startsWith("status:")
+      );
+      const workType = statusLabel
+        ? (typeof statusLabel === "string" ? statusLabel : statusLabel.name)
+        : undefined;
+
       const head =
         payload.head ??
-        (await detectIssueBranch(
-          octokit,
-          owner,
-          repo,
-          issueNumber,
-          issue.data.labels?.find((label) => label.name?.startsWith("status:"))
-            ?.name ?? undefined,
-        ));
+        (await detectIssueBranch(octokit, owner, repo, issueNumber, workType));
 
       if (!head) {
         throw new Error(
@@ -125,7 +126,9 @@ export async function POST(
         repo,
         issue_number: issueNumber,
         labels: [
-          ...(issue.data.labels ?? []).map((label) => label.name).filter(Boolean) as string[],
+          ...((issue.data.labels ?? [])
+            .map((label) => (typeof label === "string" ? label : label.name ?? ""))
+            .filter((label): label is string => Boolean(label))),
           "status:review",
         ],
       });
@@ -137,12 +140,12 @@ export async function POST(
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     return NextResponse.json(
       {
         error: "Failed to open or update pull request.",
-        details: error?.message ?? "Unknown error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
