@@ -3,8 +3,8 @@ import { getEnv } from "@/lib/env";
 import type { IssueStatus, WorkType } from "@/lib/labels";
 
 type DispatchParams = {
-  owner?: string;
-  repo?: string;
+  owner: string;
+  repo: string;
   workflowPath?: string;
   issueNumber: number;
   status: IssueStatus;

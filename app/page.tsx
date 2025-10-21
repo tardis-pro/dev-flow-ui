@@ -10,15 +10,11 @@ import { SignInPrompt } from "@/components/SignInPrompt";
 type SearchParams = Record<string, string | string[]>;
 
 type PageProps = {
-  searchParams?: SearchParams | Promise<SearchParams>;
+  searchParams?: Promise<SearchParams>;
 };
 
-async function resolveSearchParams(input?: SearchParams | Promise<SearchParams>) {
-  if (!input) return {} as SearchParams;
-  if (typeof (input as Promise<SearchParams>).then === "function") {
-    return ((await input) ?? {}) as SearchParams;
-  }
-  return input ?? {};
+async function resolveSearchParams(input?: Promise<SearchParams>) {
+  return (await input) ?? {};
 }
 
 export default async function Home({ searchParams }: PageProps) {
