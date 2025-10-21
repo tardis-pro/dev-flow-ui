@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { RepoPicker } from "@/components/RepoPicker";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,7 @@ type TopbarProps = {
   owner: string;
   repo: string;
   repoOptions: Array<{ owner: string; repo: string }>;
-  onRepoChange?: (value: { owner: string; repo: string }) => void;
-  onSearch?: (query: string) => void;
+  searchQuery?: string;
   onCreateIssue?: () => void;
 };
 
@@ -20,11 +20,28 @@ export function Topbar({
   owner,
   repo,
   repoOptions,
-  onRepoChange,
-  onSearch,
+  searchQuery = "",
   onCreateIssue,
 }: TopbarProps) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(searchQuery);
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+
+  useEffect(() => {
+    setValue(searchQuery);
+  }, [searchQuery]);
+
+  function updateQuery(next: URLSearchParams) {
+    router.replace(`${pathname}?${next.toString()}`);
+  }
+
+  function handleRepoChange(selection: { owner: string; repo: string }) {
+    const next = new URLSearchParams(params?.toString() ?? "");
+    next.set("owner", selection.owner);
+    next.set("repo", selection.repo);
+    updateQuery(next);
+  }
 
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-xl">
