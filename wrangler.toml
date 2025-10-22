@@ -3,8 +3,7 @@ main = ".open-next/worker.js"
 compatibility_date = "2024-10-21"
 compatibility_flags = ["nodejs_compat"]
 
-[site]
-bucket = ".open-next/assets"
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [vars]
 # Override during deploy; placeholder keeps Wrangler happy
