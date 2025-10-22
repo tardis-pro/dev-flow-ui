@@ -9,10 +9,12 @@ export const globalAgent = httpsModule.globalAgent;
 
 export { STATUS_CODES };
 
-export default {
+const httpsPolyfill = {
   request,
   get,
   Agent,
   globalAgent,
   STATUS_CODES,
 };
+
+export default httpsPolyfill;

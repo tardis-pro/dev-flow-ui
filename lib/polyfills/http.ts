@@ -26,14 +26,12 @@ type InternalRequestOptions = {
   body?: ArrayBufferView | ArrayBuffer | string | null;
 };
 
-type ResponseCallback = (response: FetchLikeResponse) => void;
-
 type FetchInit = RequestInit & {
   headers?: Record<string, string>;
   body?: Uint8Array;
 };
 
-type Listener = (...args: any[]) => void;
+type Listener = ((...args: unknown[]) => void) & { __origin?: (...args: unknown[]) => void };
 
 class Emitter {
   private listeners: Map<string, Set<Listener>> = new Map();
@@ -49,11 +47,11 @@ class Emitter {
   }
 
   once(event: string, listener: Listener) {
-    const wrapper: Listener = (...args: any[]) => {
+    const wrapper: Listener = (...args: unknown[]) => {
       this.off(event, wrapper);
       listener(...args);
     };
-    (wrapper as any).__origin = listener;
+    wrapper.__origin = listener;
     return this.on(event, wrapper);
   }
 
@@ -61,7 +59,7 @@ class Emitter {
     const listeners = this.listeners.get(event);
     if (!listeners) return this;
     for (const entry of listeners) {
-      if (entry === listener || (entry as any).__origin === listener) {
+      if (entry === listener || entry.__origin === listener) {
         listeners.delete(entry);
         break;
       }
@@ -85,7 +83,7 @@ class Emitter {
     return this;
   }
 
-  emit(event: string, ...args: any[]) {
+  emit(event: string, ...args: unknown[]) {
     const listeners = this.listeners.get(event);
     if (!listeners || listeners.size === 0) return false;
     for (const listener of Array.from(listeners)) {
@@ -94,8 +92,9 @@ class Emitter {
     return true;
   }
 
-  listenersFor(event: string) {
-    return this.listeners.get(event) ? Array.from(this.listeners.get(event)!) : [];
+  listenersFor(event: string): Listener[] {
+    const listeners = this.listeners.get(event);
+    return listeners ? Array.from(listeners) : [];
   }
 }
 
@@ -141,6 +140,8 @@ class FetchLikeResponse extends Emitter {
   }
 }
 
+type ResponseCallback = (response: FetchLikeResponse) => void;
+
 class ClientRequest extends Emitter {
   private readonly url: string;
   private readonly init: InternalRequestOptions;
@@ -164,13 +165,15 @@ class ClientRequest extends Emitter {
     }
 
     if (callback) {
-      this.once("response", callback);
+      this.once("response", (response: unknown) => {
+        callback(response as FetchLikeResponse);
+      });
     }
   }
 
   setHeader(name: string, value: string | number | readonly string[]) {
-    this.init.headers ??= Object.create(null);
-    this.init.headers[name.toLowerCase()] = Array.isArray(value) ? value.join(", ") : String(value);
+    const headers = (this.init.headers = this.init.headers ?? Object.create(null));
+    headers[name.toLowerCase()] = Array.isArray(value) ? value.join(", ") : String(value);
     return this;
   }
 
@@ -202,7 +205,7 @@ class ClientRequest extends Emitter {
     }
     this.ended = true;
     if (chunk !== undefined) {
-      this.write(chunk as any, encoding);
+      this.write(chunk, encoding);
     }
     if (callback) {
       this.once("finish", callback);
@@ -302,7 +305,7 @@ class ClientRequest extends Emitter {
   }
 }
 
-class Agent {}
+class HttpAgent {}
 
 const STATUS_CODES: Record<number, string> = {
   100: "Continue",
@@ -396,7 +399,7 @@ function buildUrl(options: NodeStyleRequestOptions, defaultProtocol: "http:" | "
 }
 
 function createHttpModule(defaultProtocol: "http:" | "https:") {
-  const moduleGlobalAgent = new Agent();
+  const moduleGlobalAgent = new HttpAgent();
   function request(
     url: string | URL | NodeStyleRequestOptions,
     options?: NodeStyleRequestOptions | ResponseCallback,
@@ -440,12 +443,16 @@ function createHttpModule(defaultProtocol: "http:" | "https:") {
     options?: NodeStyleRequestOptions | ResponseCallback,
     callback?: ResponseCallback,
   ) {
-    const req = request(url, options as any, callback);
+    const req = request(
+      url,
+      typeof options === "function" ? undefined : options,
+      typeof options === "function" ? options : callback,
+    );
     req.end();
     return req;
   }
 
-  return { request, get, Agent, globalAgent: moduleGlobalAgent, STATUS_CODES };
+  return { request, get, Agent: HttpAgent, globalAgent: moduleGlobalAgent, STATUS_CODES };
 }
 
 const httpModule = createHttpModule("http:");
@@ -456,10 +463,12 @@ export const Agent = httpModule.Agent;
 export const globalAgent = httpModule.globalAgent;
 export { STATUS_CODES, createHttpModule, FetchLikeResponse, ClientRequest };
 
-export default {
+const httpPolyfill = {
   request,
   get,
   Agent,
   globalAgent,
   STATUS_CODES,
 };
+
+export default httpPolyfill;
