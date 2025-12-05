@@ -5,6 +5,11 @@ export type RepoOption = {
   name: string;
   fullName: string;
   private: boolean;
+  description?: string | null;
+  language?: string | null;
+  stars?: number;
+  forks?: number;
+  updatedAt?: string;
 };
 
 export async function fetchAccessibleRepos(): Promise<RepoOption[]> {
@@ -22,6 +27,11 @@ export async function fetchAccessibleRepos(): Promise<RepoOption[]> {
         name: repo.name,
         fullName: repo.full_name,
         private: Boolean(repo.private),
+        description: repo.description,
+        language: repo.language,
+        stars: repo.stargazers_count,
+        forks: repo.forks_count,
+        updatedAt: repo.updated_at,
       }));
 
     const seen = new Set<string>();

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
 import { Column } from "@/components/Column";
 import { useBoardStore } from "@/lib/stores/board-store";
-import type { IssueBoardColumn } from "@/lib/types";
-import type { IssueStatus } from "@/lib/labels";
+import type { IssueBoardColumn, IssueSummary } from "@/lib/types";
+import type { IssueStatus, WorkType } from "@/lib/labels";
 import { IssueDrawer } from "@/components/IssueDrawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -26,10 +27,51 @@ export function Board({ initialColumns, owner, repo, initialIssueNumber }: Board
     selectIssue,
     resetDrawer,
   } = useBoardStore();
+  const params = useSearchParams();
 
   useEffect(() => {
     setColumns(initialColumns);
   }, [initialColumns, setColumns]);
+
+  // Apply client-side filtering
+  const filteredColumns = useMemo(() => {
+    const statusFilter = params?.get("status")?.split(",") as IssueStatus[] | undefined;
+    const workTypeFilter = params?.get("workType")?.split(",") as WorkType[] | undefined;
+    const assigneeFilter = params?.get("assignee");
+
+    if (!statusFilter && !workTypeFilter && !assigneeFilter) {
+      return columns.length ? columns : initialColumns;
+    }
+
+    const allColumns = columns.length ? columns : initialColumns;
+
+    return allColumns.map((column) => {
+      let filteredIssues = column.issues;
+
+      // Filter by status (only show issues in selected statuses)
+      if (statusFilter && statusFilter.length > 0) {
+        if (!statusFilter.includes(column.status)) {
+          return { ...column, issues: [] };
+        }
+      }
+
+      // Filter by work type
+      if (workTypeFilter && workTypeFilter.length > 0) {
+        filteredIssues = filteredIssues.filter((issue) =>
+          issue.workTypes.some((wt) => workTypeFilter.includes(wt))
+        );
+      }
+
+      // Filter by assignee
+      if (assigneeFilter) {
+        filteredIssues = filteredIssues.filter((issue) =>
+          issue.assignees.some((a) => a.login === assigneeFilter)
+        );
+      }
+
+      return { ...column, issues: filteredIssues };
+    });
+  }, [columns, initialColumns, params]);
 
   useEffect(() => {
     resetDrawer();
@@ -83,14 +125,12 @@ export function Board({ initialColumns, owner, repo, initialIssueNumber }: Board
     }
   }
 
-  const boardColumns = columns.length ? columns : initialColumns;
-
   return (
     <>
       <ScrollArea className="w-full flex-1">
         <DragDropContext onDragEnd={handleDrop}>
           <div className="flex min-h-[420px] gap-6 pb-6">
-            {boardColumns.map((column) => (
+            {filteredColumns.map((column) => (
               <Column
                 key={column.status}
                 column={column}

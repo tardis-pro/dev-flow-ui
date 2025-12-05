@@ -271,6 +271,13 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
                     {selectedIssue.title}
                   </span>
                 </SheetTitle>
+                {selectedIssue.body && (
+                  <div className="mt-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30">
+                    <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+                      {selectedIssue.body}
+                    </p>
+                  </div>
+                )}
                 <SheetDescription className="flex flex-wrap items-center gap-2 text-left mt-3">
                   <Badge
                     variant="outline"

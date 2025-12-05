@@ -39,6 +39,7 @@ export function mapIssueToSummary(issue: IssueResponseItem, owner: string, repo:
     id: issue.id,
     number: issue.number,
     title: issue.title,
+    body: issue.body,
     url: issue.html_url,
     status,
     workTypes,

@@ -37,12 +37,14 @@ const FAVORITE_REPOS_KEY = "repopicker_favorites";
 
 export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [recentRepos, setRecentRepos] = useState<Repository[]>([]);
   const [favoriteRepos, setFavoriteRepos] = useState<Set<string>>(new Set());
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout>();
 
   // Load recent repos and favorites from localStorage
   useEffect(() => {
@@ -64,6 +66,23 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
     }
   }, [open]);
 
+  // Debounce search query
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 200);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchQuery]);
+
   const hasSelection = Boolean(value);
   const label = hasSelection ? `${value!.owner}/${value!.repo}` : "Select repository";
   const disabled = options.length === 0;
@@ -72,7 +91,7 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
 
   // Filter and organize repos
   const { filteredOptions, recentFiltered, favoritesFiltered } = useMemo(() => {
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
 
     const filtered = options.filter((option) => {
       const fullName = repoKey(option).toLowerCase();
@@ -93,7 +112,7 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
       recentFiltered: recent,
       favoritesFiltered: favorites,
     };
-  }, [searchQuery, options, recentRepos, favoriteRepos]);
+  }, [debouncedSearchQuery, options, recentRepos, favoriteRepos]);
 
   // Build flat list for keyboard navigation
   const allSelectableRepos = useMemo(() => {
@@ -109,7 +128,7 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
   // Reset selection when filtered list changes
   useEffect(() => {
     setSelectedIndex(0);
-  }, [searchQuery]);
+  }, [debouncedSearchQuery]);
 
   const handleSelect = (option: Repository) => {
     // Add to recent repos

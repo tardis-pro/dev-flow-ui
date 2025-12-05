@@ -4,6 +4,7 @@ export type IssueSummary = {
   id: number;
   number: number;
   title: string;
+  body?: string | null;
   url: string;
   status: IssueStatus;
   workTypes: WorkType[];

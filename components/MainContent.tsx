@@ -1,18 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 import { Board } from "@/components/Board";
 import { Topbar } from "@/components/Topbar";
+import { Button } from "@/components/ui/button";
 import { getCustomRepos } from "@/lib/services/custom-repos";
 import type { IssueBoardColumn } from "@/lib/types";
+import { LogOut } from "lucide-react";
+
+type RepoOption = {
+  owner: string;
+  repo: string;
+  description?: string | null;
+  language?: string | null;
+  stars?: number;
+  forks?: number;
+  isPrivate?: boolean;
+};
 
 type MainContentProps = {
-  initialRepoOptions: Array<{ owner: string; repo: string }>;
+  initialRepoOptions: Array<RepoOption>;
   initialColumns: IssueBoardColumn[];
   owner?: string;
   repo?: string;
   searchQuery: string;
   initialIssue?: number;
+  repoMetadata?: RepoOption;
 };
 
 export function MainContent({
@@ -22,6 +36,7 @@ export function MainContent({
   repo,
   searchQuery,
   initialIssue,
+  repoMetadata,
 }: MainContentProps) {
   const [repoOptions, setRepoOptions] = useState(initialRepoOptions);
   const [columns, setColumns] = useState(initialColumns);
@@ -115,12 +130,26 @@ export function MainContent({
 
   return (
     <>
-      <Topbar
-        owner={owner}
-        repo={repo}
-        repoOptions={repoOptions}
-        searchQuery={searchQuery}
-      />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <Topbar
+            owner={owner}
+            repo={repo}
+            repoOptions={repoOptions}
+            searchQuery={searchQuery}
+            repoMetadata={repoMetadata}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="rounded-full border-slate-700 hover:border-red-500/50 hover:text-red-400"
+        >
+          <LogOut className="mr-2 h-3.5 w-3.5" />
+          Sign Out
+        </Button>
+      </div>
       {!selectedRepo ? (
         <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
           Connect a repository to your GitHub account or add a custom OSS repository to begin. Once available, pick it in the top bar to load issues.

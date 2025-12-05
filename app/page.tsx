@@ -60,12 +60,29 @@ export default async function Home({ searchParams }: PageProps) {
   return (
     <main className="flex flex-1 flex-col gap-6 p-8">
       <MainContent
-        initialRepoOptions={repoOptions.map((repo) => ({ owner: repo.owner, repo: repo.name }))}
+        initialRepoOptions={repoOptions.map((repo) => ({
+          owner: repo.owner,
+          repo: repo.name,
+          description: repo.description,
+          language: repo.language,
+          stars: repo.stars,
+          forks: repo.forks,
+          isPrivate: repo.private,
+        }))}
         initialColumns={columns}
         owner={requestedOwner}
         repo={requestedRepo}
         searchQuery={query}
         initialIssue={initialIssue}
+        repoMetadata={selectedRepo ? {
+          owner: selectedRepo.owner,
+          repo: selectedRepo.name,
+          description: selectedRepo.description,
+          language: selectedRepo.language,
+          stars: selectedRepo.stars,
+          forks: selectedRepo.forks,
+          isPrivate: selectedRepo.private,
+        } : undefined}
       />
     </main>
   );
