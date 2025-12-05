@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { fetchIssueSummaries, groupIssuesByStatus } from "@/lib/services/issues";
 import { fetchAccessibleRepos } from "@/lib/services/repos";
 import { sampleBoard } from "@/lib/fixtures";
-import { Board } from "@/components/Board";
+import { MainContent } from "@/components/MainContent";
 import { Topbar } from "@/components/Topbar";
 import { SignInPrompt } from "@/components/SignInPrompt";
 
@@ -43,7 +43,6 @@ export default async function Home({ searchParams }: PageProps) {
   ) ?? repoOptions[0];
 
   let columns = sampleBoard();
-  let error: string | null = null;
 
   if (selectedRepo) {
     try {
@@ -55,36 +54,19 @@ export default async function Home({ searchParams }: PageProps) {
       columns = groupIssuesByStatus(issues);
     } catch (err) {
       console.error(err);
-      error = "Falling back to fixture data. Configure GitHub credentials to see live issues.";
     }
   }
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-8">
-      <Topbar
-        owner={selectedRepo?.owner}
-        repo={selectedRepo?.name}
-        repoOptions={repoOptions.map((repo) => ({ owner: repo.owner, repo: repo.name }))}
+      <MainContent
+        initialRepoOptions={repoOptions.map((repo) => ({ owner: repo.owner, repo: repo.name }))}
+        initialColumns={columns}
+        owner={requestedOwner}
+        repo={requestedRepo}
         searchQuery={query}
+        initialIssue={initialIssue}
       />
-      {!selectedRepo ? (
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
-          Connect a repository to your GitHub account to begin. Once available, pick it in the top bar to load issues.
-        </div>
-      ) : null}
-      {error ? (
-        <div className="rounded-3xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
-          {error}
-        </div>
-      ) : null}
-      {selectedRepo ? (
-        <Board
-          initialColumns={columns}
-          owner={selectedRepo.owner}
-          repo={selectedRepo.name}
-          initialIssueNumber={initialIssue}
-        />
-      ) : null}
     </main>
   );
 }

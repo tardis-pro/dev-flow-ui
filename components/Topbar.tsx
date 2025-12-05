@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { RepoPicker } from "@/components/RepoPicker";
+import { AddRepoDialog } from "@/components/AddRepoDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,10 @@ export function Topbar({
     updateQuery(next);
   }
 
+  function handleRepoAdded(repo: { owner: string; name: string }) {
+    handleRepoChange({ owner: repo.owner, repo: repo.name });
+  }
+
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-xl">
       <div className="flex flex-wrap items-center gap-3">
@@ -52,6 +57,7 @@ export function Topbar({
           options={repoOptions}
           onChange={handleRepoChange}
         />
+        <AddRepoDialog onRepoAdded={handleRepoAdded} />
         <div className="relative flex-1 min-w-[200px]">
           <Input
             placeholder="Search issues, labels, or assignees"
