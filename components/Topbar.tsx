@@ -51,7 +51,7 @@ export function Topbar({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Filter states
   const [selectedStatuses, setSelectedStatuses] = useState<IssueStatus[]>([]);
