@@ -44,7 +44,7 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
   const [favoriteRepos, setFavoriteRepos] = useState<Set<string>>(new Set());
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Load recent repos and favorites from localStorage
   useEffect(() => {
