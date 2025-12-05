@@ -16,6 +16,7 @@ export const authOptions: NextAuthOptions = {
             "user:email",
             "repo",
             "workflow",
+            "read:org", // Add org read permission
           ].join(" "),
         },
       },
