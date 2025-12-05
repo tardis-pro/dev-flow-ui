@@ -248,75 +248,136 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && resetDrawer()}>
-      <SheetContent>
-        {selectedIssue ? (
-          <div className="flex h-full flex-col gap-6">
-            <SheetHeader>
-              <SheetTitle className="flex flex-col gap-2 text-left">
-                <span className="text-xs font-semibold uppercase text-slate-500">
-                  Issue #{selectedIssue.number}
-                </span>
-                {selectedIssue.title}
-              </SheetTitle>
-              <SheetDescription className="flex flex-wrap items-center gap-2 text-left">
-                <Badge variant="outline">{selectedIssue.status}</Badge>
-                {workTypeLabel ? (
-                  <Badge variant="success" className="capitalize">
-                    {workTypeLabel}
-                  </Badge>
-                ) : null}
-                {selectedIssue.labels
-                  .filter((label) => label.name && !label.name.startsWith("status:"))
-                  .map((label) => (
-                    <Badge key={label.name} variant="outline">
-                      {label.name}
-                    </Badge>
-                  ))}
-              </SheetDescription>
-            </SheetHeader>
+      <SheetContent className="w-full sm:max-w-2xl bg-slate-900/95 backdrop-blur-2xl border-slate-700/50 shadow-2xl shadow-black/50">
+        {/* Animated gradient border effect */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-pink-500/10 to-purple-500/10 opacity-30 animate-pulse" />
+        </div>
 
-            <Tabs value={tab} onValueChange={setTab}>
-              <TabsList>
-                <TabsTrigger value="artifacts">Artifacts</TabsTrigger>
-                <TabsTrigger value="diff">Diff</TabsTrigger>
-                <TabsTrigger value="pr">PR</TabsTrigger>
-                <TabsTrigger value="checks">Checks</TabsTrigger>
+        {selectedIssue ? (
+          <div className="relative flex h-full flex-col gap-6">
+            {/* Header with glassmorphic card */}
+            <div className="relative rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm p-5 shadow-lg">
+              <SheetHeader>
+                <SheetTitle className="flex flex-col gap-3 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2.5 py-1 bg-slate-800/50 rounded-full border border-slate-700/50">
+                      Issue #{selectedIssue.number}
+                    </span>
+                    {/* Neon accent indicator */}
+                    <div className="flex-1 h-[1px] bg-gradient-to-r from-cyan-500/50 via-transparent to-transparent" />
+                  </div>
+                  <span className="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                    {selectedIssue.title}
+                  </span>
+                </SheetTitle>
+                <SheetDescription className="flex flex-wrap items-center gap-2 text-left mt-3">
+                  <Badge
+                    variant="outline"
+                    className="border-cyan-500/50 text-cyan-300 bg-cyan-500/10 font-mono text-xs uppercase"
+                  >
+                    {selectedIssue.status}
+                  </Badge>
+                  {workTypeLabel ? (
+                    <Badge
+                      variant="success"
+                      className="capitalize border-emerald-500/50 bg-emerald-500/10 text-emerald-300 font-semibold"
+                    >
+                      {workTypeLabel}
+                    </Badge>
+                  ) : null}
+                  {selectedIssue.labels
+                    .filter((label) => label.name && !label.name.startsWith("status:"))
+                    .map((label) => (
+                      <Badge
+                        key={label.name}
+                        variant="outline"
+                        className="border-slate-600 bg-slate-800/50 text-slate-300"
+                      >
+                        {label.name}
+                      </Badge>
+                    ))}
+                </SheetDescription>
+              </SheetHeader>
+            </div>
+
+            {/* Tabs with neon styling */}
+            <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col">
+              <TabsList className="w-full justify-start bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-1">
+                <TabsTrigger
+                  value="artifacts"
+                  className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
+                >
+                  Artifacts
+                </TabsTrigger>
+                <TabsTrigger
+                  value="diff"
+                  className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
+                >
+                  Diff
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pr"
+                  className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
+                >
+                  PR
+                </TabsTrigger>
+                <TabsTrigger
+                  value="checks"
+                  className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
+                >
+                  Checks
+                </TabsTrigger>
               </TabsList>
-              <TabsContent value="artifacts">
+              <TabsContent value="artifacts" className="flex-1 mt-4">
                 <ArtifactsViewer
                   artifacts={drawerData?.artifacts}
                   isLoading={loading.artifacts}
                 />
               </TabsContent>
-              <TabsContent value="diff">
+              <TabsContent value="diff" className="flex-1 mt-4">
                 <DiffViewer
                   compare={drawerData?.compare}
                   branch={drawerData?.branch}
                   isLoading={loading.diff}
                 />
               </TabsContent>
-              <TabsContent value="pr">
+              <TabsContent value="pr" className="flex-1 mt-4">
                 <PRPanel
                   pullRequest={drawerData?.issue?.linkedPullRequest}
                   isLoading={loading.pr}
                   onRefresh={loadPullRequest}
                 />
               </TabsContent>
-              <TabsContent value="checks">
+              <TabsContent value="checks" className="flex-1 mt-4">
                 <ChecksPanel runs={drawerData?.checks} isLoading={loading.checks} />
               </TabsContent>
             </Tabs>
 
-            <Separator className="border-slate-800" />
+            <Separator className="bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={runOrchestrator} variant="default">
-                Run Gemini (Stage-aware)
+            {/* Action buttons with glassmorphic styling */}
+            <div className="relative flex flex-wrap items-center gap-3 p-4 rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm">
+              <Button
+                onClick={runOrchestrator}
+                variant="default"
+                className="relative overflow-hidden bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 border-0 shadow-lg shadow-cyan-500/20 transition-all duration-300"
+              >
+                <span className="relative z-10">Run Gemini (Stage-aware)</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
-              <Button onClick={openPullRequest} variant="secondary">
+              <Button
+                onClick={openPullRequest}
+                variant="secondary"
+                className="border-slate-600 bg-slate-800/80 hover:bg-slate-700/80 hover:border-pink-500/50 shadow-md transition-all duration-300"
+              >
                 Open / Update PR
               </Button>
-              <Button onClick={moveToNextStage} variant="outline">
+              <Button
+                onClick={moveToNextStage}
+                variant="outline"
+                className="border-slate-600 hover:border-purple-500/50 hover:bg-purple-500/10 hover:text-purple-300 transition-all duration-300"
+              >
                 Move to Next Stage
               </Button>
             </div>

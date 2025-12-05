@@ -60,5 +60,8 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.44.0"
-  }
+  },
+  "trustedDependencies": [
+    "unrs-resolver"
+  ]
 }
