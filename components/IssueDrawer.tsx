@@ -309,7 +309,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
             </div>
 
             {/* Tabs with neon styling */}
-            <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col overflow-hidden">
+            <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="flex-shrink-0 w-full justify-start bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-1">
                 <TabsTrigger
                   value="artifacts"
@@ -336,27 +336,27 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
                   Checks
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="artifacts" className="flex-1 mt-4 overflow-y-auto">
+              <TabsContent value="artifacts" className="flex-1 mt-4 overflow-y-auto min-h-0">
                 <ArtifactsViewer
                   artifacts={drawerData?.artifacts}
                   isLoading={loading.artifacts}
                 />
               </TabsContent>
-              <TabsContent value="diff" className="flex-1 mt-4 overflow-y-auto">
+              <TabsContent value="diff" className="flex-1 mt-4 overflow-y-auto min-h-0">
                 <DiffViewer
                   compare={drawerData?.compare}
                   branch={drawerData?.branch}
                   isLoading={loading.diff}
                 />
               </TabsContent>
-              <TabsContent value="pr" className="flex-1 mt-4 overflow-y-auto">
+              <TabsContent value="pr" className="flex-1 mt-4 overflow-y-auto min-h-0">
                 <PRPanel
                   pullRequest={drawerData?.issue?.linkedPullRequest}
                   isLoading={loading.pr}
                   onRefresh={loadPullRequest}
                 />
               </TabsContent>
-              <TabsContent value="checks" className="flex-1 mt-4 overflow-y-auto">
+              <TabsContent value="checks" className="flex-1 mt-4 overflow-y-auto min-h-0">
                 <ChecksPanel runs={drawerData?.checks} isLoading={loading.checks} />
               </TabsContent>
             </Tabs>
