@@ -255,9 +255,9 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
         </div>
 
         {selectedIssue ? (
-          <div className="relative flex h-full flex-col gap-6">
+          <div className="relative flex h-full flex-col gap-6 overflow-hidden">
             {/* Header with glassmorphic card */}
-            <div className="relative rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm p-5 shadow-lg">
+            <div className="relative flex-shrink-0 rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm p-5 shadow-lg">
               <SheetHeader>
                 <SheetTitle className="flex flex-col gap-3 text-left">
                   <div className="flex items-center gap-2">
@@ -309,8 +309,8 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
             </div>
 
             {/* Tabs with neon styling */}
-            <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col">
-              <TabsList className="w-full justify-start bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-1">
+            <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col overflow-hidden">
+              <TabsList className="flex-shrink-0 w-full justify-start bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-1">
                 <TabsTrigger
                   value="artifacts"
                   className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
@@ -336,35 +336,35 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
                   Checks
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="artifacts" className="flex-1 mt-4">
+              <TabsContent value="artifacts" className="flex-1 mt-4 overflow-y-auto">
                 <ArtifactsViewer
                   artifacts={drawerData?.artifacts}
                   isLoading={loading.artifacts}
                 />
               </TabsContent>
-              <TabsContent value="diff" className="flex-1 mt-4">
+              <TabsContent value="diff" className="flex-1 mt-4 overflow-y-auto">
                 <DiffViewer
                   compare={drawerData?.compare}
                   branch={drawerData?.branch}
                   isLoading={loading.diff}
                 />
               </TabsContent>
-              <TabsContent value="pr" className="flex-1 mt-4">
+              <TabsContent value="pr" className="flex-1 mt-4 overflow-y-auto">
                 <PRPanel
                   pullRequest={drawerData?.issue?.linkedPullRequest}
                   isLoading={loading.pr}
                   onRefresh={loadPullRequest}
                 />
               </TabsContent>
-              <TabsContent value="checks" className="flex-1 mt-4">
+              <TabsContent value="checks" className="flex-1 mt-4 overflow-y-auto">
                 <ChecksPanel runs={drawerData?.checks} isLoading={loading.checks} />
               </TabsContent>
             </Tabs>
 
-            <Separator className="bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+            <Separator className="flex-shrink-0 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
 
             {/* Action buttons with glassmorphic styling */}
-            <div className="relative flex flex-wrap items-center gap-3 p-4 rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm">
+            <div className="relative flex-shrink-0 flex flex-wrap items-center gap-3 p-4 rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm">
               <Button
                 onClick={runOrchestrator}
                 variant="default"
