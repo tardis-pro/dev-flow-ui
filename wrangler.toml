@@ -4,3 +4,6 @@ compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
 
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+[vars]
+NEXTAUTH_URL = "https://code.tardis.digital"
