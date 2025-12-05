@@ -9,7 +9,7 @@ export type RepoOption = {
   language?: string | null;
   stars?: number;
   forks?: number;
-  updatedAt?: string;
+  updatedAt?: string | null;
 };
 
 export async function fetchAccessibleRepos(): Promise<RepoOption[]> {

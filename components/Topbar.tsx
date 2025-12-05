@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { RepoPicker } from "@/components/RepoPicker";
@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Filter, Plus, RefreshCw, X, User, Tag, GitPullRequest } from "lucide-react";
+import { Plus, RefreshCw, X, Tag, GitPullRequest } from "lucide-react";
 import { ISSUE_STATUSES, WORK_TYPE_LABELS } from "@/lib/labels";
 import type { IssueStatus, WorkType } from "@/lib/labels";
 
@@ -232,7 +232,7 @@ export function Topbar({
                 <GitPullRequest className="h-3 w-3" />
                 <span className="text-xs">Status</span>
                 {selectedStatuses.length > 0 && (
-                  <Badge variant="secondary" className="h-4 px-1.5 text-[10px] bg-cyan-500/20 text-cyan-300">
+                  <Badge variant="default" className="h-4 px-1.5 text-[10px] bg-cyan-500/20 text-cyan-300">
                     {selectedStatuses.length}
                   </Badge>
                 )}
@@ -261,7 +261,7 @@ export function Topbar({
                 <Tag className="h-3 w-3" />
                 <span className="text-xs">Work Type</span>
                 {selectedWorkTypes.length > 0 && (
-                  <Badge variant="secondary" className="h-4 px-1.5 text-[10px] bg-emerald-500/20 text-emerald-300">
+                  <Badge variant="default" className="h-4 px-1.5 text-[10px] bg-emerald-500/20 text-emerald-300">
                     {selectedWorkTypes.length}
                   </Badge>
                 )}

@@ -6,7 +6,7 @@ import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
 import { Column } from "@/components/Column";
 import { useBoardStore } from "@/lib/stores/board-store";
-import type { IssueBoardColumn, IssueSummary } from "@/lib/types";
+import type { IssueBoardColumn } from "@/lib/types";
 import type { IssueStatus, WorkType } from "@/lib/labels";
 import { IssueDrawer } from "@/components/IssueDrawer";
 import { ScrollArea } from "@/components/ui/scroll-area";

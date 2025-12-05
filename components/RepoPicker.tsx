@@ -17,12 +17,12 @@ import { GitBranch, Search, Star, Clock, Zap, Command, Code2, GitFork } from "lu
 type Repository = {
   owner: string;
   repo: string;
-  description?: string;
-  language?: string;
+  description?: string | null;
+  language?: string | null;
   stars?: number;
   forks?: number;
   isPrivate?: boolean;
-  updatedAt?: string;
+  updatedAt?: string | null;
 };
 
 type RepoPickerProps = {
