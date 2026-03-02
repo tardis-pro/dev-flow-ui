@@ -1,0 +1,53 @@
+Task 9: BYOK Key Validation API
+=================================
+Date: 2026-03-02
+Status: COMPLETE
+
+## File Created
+app/api/user/keys/validate/route.ts (82 lines)
+
+## Implementation Summary
+
+### Auth
+- Uses `getServerSession(authOptions)` → 401 if no session
+
+### Request Body
+- Accepts: `{ provider: 'gemini' | 'claude' | 'qwen', apiKey: string }`
+- Validates provider is one of 3 allowed values → 400 if invalid
+- Validates apiKey is non-empty string → 400 if invalid
+
+### Validation Logic
+- Calls `callAI()` from `lib/ai-client.ts` with:
+  - systemPrompt: "You are a test assistant."
+  - userPrompt: "Say hello in one word."
+  - maxTokens: 10
+- callAI() has built-in 60s AbortController timeout
+
+### Responses
+- Valid key: `{ valid: true, provider }` — HTTP 200
+- Invalid key: `{ valid: false, error: sanitizedError, provider }` — HTTP 200
+- Unauthenticated: `{ error: "Unauthorized" }` — HTTP 401
+- Invalid provider: `{ error: "Invalid provider. Must be one of: ..." }` — HTTP 400
+- Missing fields: `{ error: "Request body must include provider and apiKey" }` — HTTP 400
+
+### Security
+- Does NOT save the apiKey anywhere
+- Does NOT log the apiKey
+- Sanitizes error messages: replaces all occurrences of apiKey with "[REDACTED]"
+  - Implementation: `message.split(apiKey).join("[REDACTED]")`
+  - This avoids regex escaping issues for keys with special chars
+
+## LSP Diagnostics
+No diagnostics found on the created file.
+
+## Build Output
+pnpm build passed with zero TypeScript/lint errors.
+Route appears in build table: ƒ /api/user/keys/validate
+
+## Build Route Table (excerpt)
+├ ƒ /api/user/keys                         161 B         102 kB
+├ ƒ /api/user/keys/validate                161 B         102 kB
+
+Note: `rm -rf .next` required before build due to stale type cache from previous build
+runs (.next/types caches route.ts type files; when they reference non-existent paths it
+causes phantom build failures). Always `rm -rf .next` for clean builds.

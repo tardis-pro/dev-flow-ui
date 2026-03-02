@@ -1,0 +1,45 @@
+# Task 8: BYOK CRUD API — Evidence
+
+## Summary
+Created `app/api/user/keys/route.ts` with full CRUD operations for user-provided AI provider keys.
+
+## Endpoints
+
+### GET /api/user/keys
+- Auth: Required (401 if unauthenticated)
+- Response: `{ keys: [{ provider: string, configured: true, createdAt: string }] }`
+- Returns only metadata — NEVER the actual API keys
+
+### POST /api/user/keys
+- Auth: Required (401 if unauthenticated)
+- Body: `{ provider: string, apiKey: string }`
+- Validates provider must be one of: `gemini`, `claude`, `qwen` (400 if invalid)
+- Validates apiKey is not empty (400 if empty)
+- Encrypts key using `encryptForUser(apiKey, userId)`
+- Stores encrypted key in KV via `setUserKey()`
+- Records metadata in D1 via `db.upsertProviderKey()`
+- Response: `{ success: true, provider: string }` (201)
+
+### DELETE /api/user/keys
+- Auth: Required (401 if unauthenticated)
+- Body: `{ provider: string }`
+- Validates provider (400 if invalid)
+- Removes key from KV via `deleteUserKey()`
+- Removes metadata from D1 via `db.deleteProviderKey()`
+- Response: `{ success: true, provider: string }` (200)
+
+## Security
+- API keys are NEVER returned in any response
+- API keys are NEVER logged (even partially)
+- Keys are encrypted per-user before storage
+- All operations are user-scoped by userId (email from session)
+
+## Implementation Details
+- Uses `getCloudflareContext()` from `@opennextjs/cloudflare` to access CF bindings (DB, USER_KEYS)
+- Uses `getServerSession(authOptions)` for NextAuth authentication
+- Provider validation via type guard with const assertion
+- TypeScript: Zero LSP diagnostics
+- Build: `pnpm build` passes with zero errors
+
+## Files Modified
+- Created: `app/api/user/keys/route.ts` (184 lines)

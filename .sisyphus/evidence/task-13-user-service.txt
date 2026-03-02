@@ -1,0 +1,49 @@
+Task 13 — D1 User Service
+Date: 2026-03-02
+Status: COMPLETE
+
+## Files Modified
+
+### lib/db.ts
+- Added `removeUserRepo(userId, owner, repo)` method to `createDb()` returned object
+- Query: DELETE FROM user_repos WHERE user_id = ? AND owner = ? AND repo = ?
+- All WHERE clauses include user_id for proper scoping
+
+### lib/services/user.ts (NEW FILE — 107 lines)
+Exports all 7 functions:
+1. upsertUser(env, githubId, login, email, avatarUrl): Promise<User>
+   - Uses crypto.randomUUID() for new user IDs
+   - Calls db.upsertUser() then db.getUserByGithubId() to return full User
+   - Throws if user still not found post-upsert
+2. getUserByGithubId(env, githubId): Promise<User | null>
+3. addUserRepo(env, userId, owner, repo): Promise<void>
+4. getUserRepos(env, userId): Promise<UserRepo[]>
+5. removeUserRepo(env, userId, owner, repo): Promise<void>
+6. getOnboardingState(env, userId): Promise<OnboardingState | null>
+7. updateOnboardingState(env, userId, step): Promise<void>
+
+All functions:
+- Accept D1Env as first param
+- Use getDb(env) from lib/db.ts
+- Properly typed (no `as any`, no `@ts-ignore`)
+- All DB queries include user_id in WHERE clauses
+
+### lib/auth.ts
+- jwt callback now destructures `profile` param
+- On sign-in (when `account` is non-null), stores GitHub identity fields in JWT token:
+  - token.githubId = String(profile.id)
+  - token.login = profile.login
+  - token.avatarUrl = profile.avatar_url
+- Uses type narrowing with inline type cast for GitHub profile shape
+- No D1 calls in the callback (CF Workers constraint — D1 not accessible there)
+
+## Build Result
+✓ Compiled successfully
+✓ Type checking passed
+✓ Zero errors
+All 18 routes generated successfully
+
+## Key Design Decisions
+- No D1 calls in NextAuth jwt callback — CF Workers bindings unavailable there
+- JWT token stores githubId/login/avatarUrl for API routes to use when performing D1 upsert
+- `upsertUser` uses ON CONFLICT(github_id) in the underlying DB query (from db.ts) to safely handle re-logins
