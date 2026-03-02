@@ -1,0 +1,33 @@
+# T29 CF Workers Runtime Compatibility Audit Evidence
+
+## pnpm build (Next.js standard build)
+Result: EXIT 0 — passes cleanly
+Warnings: unused vars only (no errors)
+
+## pnpm cf:build (OpenNext Cloudflare build)
+Result: FAILS with pre-existing compatibility issue
+Error: Invalid alias name: "next/dist/compiled/node-fetch" (and 3 similar)
+Root cause: @opennextjs/cloudflare 1.11.0 + Next.js 15.5.6 incompatibility
+Status: Pre-existing — confirmed by git stash test (same error on HEAD~1)
+Action: Not caused by our changes; tracked as known issue
+
+## Node-only imports in lib/
+grep require('crypto'): ZERO results
+grep require('fs'): ZERO results  
+grep require('path'): ZERO results
+grep require('child_process'): ZERO results
+grep import from 'crypto': ZERO results
+grep import from 'fs': ZERO results
+
+## Forbidden patterns
+dispatchOrchestrator: ZERO references
+as any / @ts-ignore: ZERO in new lib files (only in commented-out test block in ai-client.ts)
+ops/out writes: ZERO (pre-existing read-only path references)
+
+## Conclusion
+All new lib/*.ts files are CF Workers compatible:
+- lib/crypto.ts: Uses Web Crypto API (globalThis.crypto) — CF compatible
+- lib/kv.ts: Uses KVNamespace type — CF native
+- lib/ai-client.ts: Uses globalThis.fetch — CF compatible
+- lib/github-comments.ts: Pure Octokit calls — CF compatible
+- lib/orchestrator.ts: Pure function composition — CF compatible

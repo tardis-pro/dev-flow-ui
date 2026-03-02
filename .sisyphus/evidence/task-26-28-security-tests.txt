@@ -1,0 +1,20 @@
+# T26-T28 Security + Idempotency Tests Evidence
+
+## Test Run Results
+pnpm vitest run — 2026-03-02
+
+Test Files  8 passed (8)
+     Tests  45 passed (45)
+  Duration  539ms
+
+## Files Created
+- tests/security/encryption-roundtrip.test.ts (7 tests)
+- tests/security/tenant-isolation.test.ts (8 tests)
+- tests/api/bootstrap-idempotency.test.ts (6 tests)
+- tests/api/card-move-ai-comment.test.ts (5 tests)
+
+## Audit Results
+- dispatchOrchestrator: ZERO references
+- as any / @ts-ignore: ZERO in new test files
+- require('crypto')/require('fs') in lib/: ZERO
+- ops/out writes: ZERO (pre-existing read-only references in lib/repo.ts, lib/fixtures.ts)
