@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArtifactsViewer } from "@/components/ArtifactsViewer";
+
 import { DiffViewer } from "@/components/DiffViewer";
 import { PRPanel } from "@/components/PRPanel";
 import { ChecksPanel } from "@/components/ChecksPanel";
@@ -20,7 +20,6 @@ type IssueDrawerProps = {
 };
 
 type LoadingState = {
-  artifacts: boolean;
   diff: boolean;
   pr: boolean;
   checks: boolean;
@@ -35,9 +34,8 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
     moveIssueOptimistic,
     revertIssueMove,
   } = useBoardStore();
-  const [tab, setTab] = useState("artifacts");
+  const [tab, setTab] = useState("diff");
   const [loading, setLoading] = useState<LoadingState>({
-    artifacts: false,
     diff: false,
     pr: false,
     checks: false,
@@ -48,14 +46,8 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
   useEffect(() => {
     if (!selectedIssue) return;
 
-    if (!drawerData?.artifacts && !loading.artifacts) {
-      void loadArtifacts();
-    }
     if (!drawerData?.compare && !loading.diff) {
       void loadDiff();
-    }
-    if (!drawerData?.compare && !drawerData?.artifacts) {
-      setTab("artifacts");
     }
     if (!drawerData?.issue?.linkedPullRequest && !loading.pr) {
       void loadPullRequest();
@@ -69,32 +61,14 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
 
   useEffect(() => {
     if (!selectedIssue) {
-      setTab("artifacts");
+      setTab("diff");
       setLoading({
-        artifacts: false,
         diff: false,
         pr: false,
         checks: false,
       });
     }
   }, [selectedIssue]);
-
-  async function loadArtifacts() {
-    if (!selectedIssue) return;
-    setLoading((state) => ({ ...state, artifacts: true }));
-    try {
-      const response = await fetch(
-        `/api/artifacts/${selectedIssue.number}?owner=${owner}&repo=${repo}`,
-      );
-      const data = await response.json();
-      hydrateDrawer({ artifacts: data.artifacts });
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load artifacts for this issue.");
-    } finally {
-      setLoading((state) => ({ ...state, artifacts: false }));
-    }
-  }
 
   async function loadDiff() {
     if (!selectedIssue) return;
@@ -155,30 +129,6 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
     }
   }
 
-  async function runOrchestrator() {
-    if (!selectedIssue) return;
-    try {
-      const workType = selectedIssue.workTypes?.[0];
-      const response = await fetch(`/api/orchestrate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          issueNumber: selectedIssue.number,
-          status: selectedIssue.status,
-          workType,
-          owner,
-          repo,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-      toast.success("Gemini orchestration dispatched.");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to run orchestrator.");
-    }
-  }
 
   async function openPullRequest() {
     if (!selectedIssue) return;
@@ -311,12 +261,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
             {/* Tabs with neon styling */}
             <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="flex-shrink-0 w-full justify-start bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-1">
-                <TabsTrigger
-                  value="artifacts"
-                  className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
-                >
-                  Artifacts
-                </TabsTrigger>
+
                 <TabsTrigger
                   value="diff"
                   className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
@@ -336,12 +281,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
                   Checks
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="artifacts" className="flex-1 mt-4 overflow-y-auto min-h-0">
-                <ArtifactsViewer
-                  artifacts={drawerData?.artifacts}
-                  isLoading={loading.artifacts}
-                />
-              </TabsContent>
+
               <TabsContent value="diff" className="flex-1 mt-4 overflow-y-auto min-h-0">
                 <DiffViewer
                   compare={drawerData?.compare}
@@ -365,14 +305,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
 
             {/* Action buttons with glassmorphic styling */}
             <div className="relative flex-shrink-0 flex flex-wrap items-center gap-3 p-4 rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm">
-              <Button
-                onClick={runOrchestrator}
-                variant="default"
-                className="relative overflow-hidden bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 border-0 shadow-lg shadow-cyan-500/20 transition-all duration-300"
-              >
-                <span className="relative z-10">Run Gemini (Stage-aware)</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Button>
+
               <Button
                 onClick={openPullRequest}
                 variant="secondary"
