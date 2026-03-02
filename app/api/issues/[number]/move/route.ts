@@ -6,7 +6,8 @@ import {
   statusToLabel,
   type IssueStatus,
 } from "@/lib/labels";
-import { dispatchOrchestrator } from "@/lib/orchestrator";
+// TODO: T18 will wire up the new callAIAndComment orchestrator
+// import { dispatchOrchestrator } from "@/lib/orchestrator";
 
 type MovePayload = {
   toStatus: IssueStatus;
@@ -47,7 +48,7 @@ export async function POST(
   }
 
   try {
-    const issue = await withOctokit(
+    const _issue = await withOctokit(
       { owner, repo },
       async (octokit) => {
         const { data } = await octokit.issues.get({
@@ -79,13 +80,15 @@ export async function POST(
       },
     );
 
-    await dispatchOrchestrator({
-      owner,
-      repo,
-      issueNumber: number,
-      status: body.toStatus,
-      workType: issue.workType,
-    });
+    // AI orchestration now handled by callAIAndComment in lib/orchestrator.ts
+    // Will be wired in T18
+    // await dispatchOrchestrator({
+    //   owner,
+    //   repo,
+    //   issueNumber: number,
+    //   status: body.toStatus,
+    //   workType: issue.workType,
+    // });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

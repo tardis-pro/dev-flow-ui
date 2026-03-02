@@ -1,0 +1,97 @@
+# Task 12: Bootstrap API Implementation Evidence
+
+## Summary
+Created the Bootstrap API at `app/api/bootstrap/route.ts` that:
+- Creates DevFlow labels on a GitHub repo (10 labels)
+- Creates a workflow PR if the workflow file doesn't exist
+- Updates the bootstrapped flag in D1 database
+
+## File Created
+- `app/api/bootstrap/route.ts` (189 lines)
+
+## API Endpoint
+POST /api/bootstrap
+
+### Request Body
+```json
+{
+  "owner": "string",  // GitHub repo owner
+  "repo": "string"    // GitHub repo name
+}
+```
+
+### Response (201)
+```json
+{
+  "labels_created": 5,
+  "labels_skipped": 5,
+  "pr_url": "https://github.com/owner/repo/pull/123",
+  "already_bootstrapped": false
+}
+```
+
+### Error Responses
+- 401: Unauthorized (no session)
+- 400: Invalid request body or missing owner/repo
+
+## Labels Created
+| Name | Color |
+|------|-------|
+| status:inception | 1d76db |
+| status:discussion | 0e8a16 |
+| status:build | fbca04 |
+| status:review | d93f0b |
+| status:done | 6f42c1 |
+| feature | 0075ca |
+| bugfix | d73a4a |
+| refactor | e4e669 |
+| docs | 0e8a16 |
+| chore | bfdadc |
+
+## Workflow File
+Creates `.github/workflows/devflow.yml` on branch `setup/devflow`:
+```yaml
+name: DevFlow Orchestrator
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+      phase:
+        description: 'Workflow phase'
+        required: true
+jobs:
+  orchestrate:
+    uses: tardis-pro/ai-dev-workflow-action/.github/workflows/orchestrator-multi-provider.yml@main
+    with:
+      issue_number: ${{ inputs.issue_number }}
+      phase: ${{ inputs.phase }}
+    secrets: inherit
+```
+
+## Idempotency
+- Labels: Skipped if already exists (422 error)
+- Branch: Continues if already exists (422 error)
+- PR: Returns existing PR URL if one is already open
+- Workflow file: Sets `already_bootstrapped: true` if file exists in default branch
+
+## Database Update
+After successful bootstrap, updates `user_repos.bootstrapped = 1` for the user/repo combination.
+Uses `globalThis.env.DB` to access Cloudflare D1 binding.
+
+## Build Verification
+```
+pnpm build
+```
+Result: Success (no errors)
+
+## Implementation Notes
+- Uses `createUserClient()` from `@/lib/github` for user OAuth token
+- Uses `getDb()` from `@/lib/db` for D1 database access
+- Uses `btoa()` for base64 encoding (CF Workers compatible)
+- Catches 422 errors for idempotent label/branch creation
+- Checks for existing open PRs before creating new one
+
+## Date
+2026-03-02

@@ -230,3 +230,64 @@ const octokit = { rest: { issues: { listComments, createComment } } } as unknown
 - **Cache headers**: Set via `NextResponse.json(response, { headers: { "Cache-Control": "max-age=300" } })`
 - **Error pattern**: 404 from GitHub repos.get → return 404; catch other GitHub errors and re-throw
 - **Reuses existing types**: `RepoStack`, `RecentCommit` from `lib/prompts/types.ts`
+
+## [T12] Bootstrap API — app/api/bootstrap/route.ts
+
+### API Endpoint
+- **Route**: POST /api/bootstrap
+- **Auth**: getServerSession(authOptions) → 401 if no session
+- **Body**: `{ owner: string, repo: string }`
+- **Response**: `{ labels_created: number, labels_skipped: number, pr_url?: string, already_bootstrapped: boolean }`
+
+### Labels Created (10 total)
+- Status labels: `status:inception`, `status:discussion`, `status:build`, `status:review`, `status:done`
+- Type labels: `feature`, `bugfix`, `refactor`, `docs`, `chore`
+- Colors use hex without `#` prefix for GitHub API
+
+### Idempotency Patterns
+- **Labels**: Catch 422 (validation failed) → count as skipped, continue
+- **Branch**: Catch 422 "Reference already exists" → continue with existing branch
+- **PR**: List open PRs with `head: owner:setup/devflow` first → return existing URL if found
+- **Workflow file**: Check via repos.getContent() → set `alreadyBootstrapped: true` if exists (404 = not found)
+
+### GitHub API calls used
+- `octokit.rest.issues.createLabel()` — create labels
+- `octokit.rest.repos.getContent()` — check workflow file exists
+- `octokit.rest.repos.get()` — get default branch name
+- `octokit.rest.git.getRef()` — get default branch SHA
+- `octokit.rest.git.createRef()` — create setup/devflow branch
+- `octokit.rest.repos.createOrUpdateFileContents()` — commit workflow file
+- `octokit.rest.pulls.list()` — check for existing PR
+- `octokit.rest.pulls.create()` — create PR
+
+### CF Workers compatibility
+- Use `btoa()` for base64 encoding — no Node Buffer
+- Access D1 via `(globalThis as unknown as { env?: { DB: unknown } }).env.DB`
+- Template literals need `\${{ }}` to escape GitHub Actions `${{ }}` syntax
+
+### Database update
+- Call `db.updateUserRepoBootstrapped(userId, owner, repo)` after successful bootstrap
+- Get userId via `db.getUserByGithubId(session.user.id)` — session.user.id is GitHub ID, not UUID
+- Wrap in try/catch with console.warn — DB update failure should not fail the API response
+
+### Workflow file template
+- Branch: `setup/devflow`
+- PR title: `chore: add DevFlow workflow`
+- File path: `.github/workflows/devflow.yml`
+- Uses reusable workflow: `tardis-pro/ai-dev-workflow-action/.github/workflows/orchestrator-multi-provider.yml@main`
+
+
+## [T19] dispatchOrchestrator Cleanup
+
+### Deprecated endpoint pattern
+- `app/api/orchestrate/route.ts` — stubbed to return `{ message: "Orchestration now handled automatically on card move" }` with 200 status
+- Old orchestration endpoint is deprecated; AI orchestration now handled by `callAIAndComment` in lib/orchestrator.ts
+
+### Move route pattern
+- `app/api/issues/[number]/move/route.ts` — still updates labels via GitHub API
+- Orchestrator call removed; T18 will wire up new `callAIAndComment` 
+- Unused variable pattern: prefix with underscore (`_issue`) to suppress ESLint warnings
+
+### Build cache quirk
+- If build fails with SWC parser errors after file changes, clear both `.next` and `node_modules/.cache`
+- Command: `rm -rf .next node_modules/.cache && pnpm build`

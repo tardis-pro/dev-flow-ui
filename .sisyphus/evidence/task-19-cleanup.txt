@@ -1,0 +1,39 @@
+# T19 Cleanup: dispatchOrchestrator References Removed
+
+## Summary
+Removed all active `dispatchOrchestrator` imports and calls from the codebase, 
+except for the definition in `lib/orchestrator.ts` (being rewritten by another agent).
+
+## Files Modified
+
+### 1. app/api/orchestrate/route.ts
+- **Before**: Full orchestration endpoint that called `dispatchOrchestrator`
+- **After**: Stubbed endpoint returning 200 with deprecation message
+- **Response**: `{ message: "Orchestration now handled automatically on card move" }`
+
+### 2. app/api/issues/[number]/move/route.ts
+- **Before**: Called `dispatchOrchestrator` after updating issue labels
+- **After**: Removed import, commented out call with TODO for T18
+- **Note**: `issue` variable renamed to `_issue` since no longer used
+
+## Verification
+
+### Grep Search Results
+Only commented-out references remain outside lib/orchestrator.ts:
+```
+./app/api/issues/[number]/move/route.ts:10:// import { dispatchOrchestrator } from "@/lib/orchestrator";
+./app/api/issues/[number]/move/route.ts:85:    // await dispatchOrchestrator({
+```
+
+### Build Status
+```
+pnpm build
+```
+Result: ✓ Compiled successfully, zero errors
+
+## Files NOT Modified
+- `lib/orchestrator.ts` - Being rewritten by another agent (T15)
+
+## Next Steps (T18)
+- Wire up new `callAIAndComment` orchestrator in the move route
+- Uncomment and update the orchestrator call with new API
