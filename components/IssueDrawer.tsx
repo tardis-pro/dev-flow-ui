@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { DiffViewer } from "@/components/DiffViewer";
 import { PRPanel } from "@/components/PRPanel";
 import { ChecksPanel } from "@/components/ChecksPanel";
+import { DesignChat } from "@/components/DesignChat";
 import { useBoardStore } from "@/lib/stores/board-store";
 import { WORK_TYPE_LABELS, nextStatus } from "@/lib/labels";
 import { toast } from "sonner";
@@ -67,6 +68,8 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
         pr: false,
         checks: false,
       });
+    } else if (selectedIssue.status === "inception" || selectedIssue.status === "discussion") {
+      setTab("design");
     }
   }, [selectedIssue]);
 
@@ -262,6 +265,15 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
             <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="flex-shrink-0 w-full justify-start bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-1">
 
+                {(selectedIssue?.status === "inception" || selectedIssue?.status === "discussion") && (
+                  <TabsTrigger
+                    value="design"
+                    className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
+                  >
+                    Design
+                  </TabsTrigger>
+                )}
+
                 <TabsTrigger
                   value="diff"
                   className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 transition-all"
@@ -281,6 +293,17 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
                   Checks
                 </TabsTrigger>
               </TabsList>
+
+              {(selectedIssue?.status === "inception" || selectedIssue?.status === "discussion") && (
+                <TabsContent value="design" className="flex-1 mt-4 overflow-y-auto min-h-0">
+                  <DesignChat
+                    issueNumber={selectedIssue.number}
+                    owner={owner}
+                    repo={repo}
+                    issueStatus={selectedIssue.status}
+                  />
+                </TabsContent>
+              )}
 
               <TabsContent value="diff" className="flex-1 mt-4 overflow-y-auto min-h-0">
                 <DiffViewer

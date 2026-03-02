@@ -7,3 +7,13 @@ assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [vars]
 NEXTAUTH_URL = "https://code.tardis.digital"
+
+
+[[d1_databases]]
+binding = "DB"
+database_name = "devflow-db"
+database_id = "local-devflow-db"
+
+[[kv_namespaces]]
+binding = "USER_KEYS"
+id = "local-user-keys-id"

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createUserClient } from "@/lib/github";
+import { getDb } from "@/lib/db";
 
 const DEVFLOW_LABELS = [
   { name: "status:inception", color: "1d76db" },
@@ -153,10 +154,27 @@ export async function POST(request: NextRequest) {
           });
           prUrl = pr.html_url;
         }
-      } catch (prErr: unknown) {
-        console.warn("Failed to create workflow PR:", prErr);
+  } catch (prErr: unknown) {
+    console.warn("Failed to create workflow PR:", prErr);
+  }
+    }
+  }
+
+  // Update bootstrapped flag in database
+  try {
+    const cfEnv = (globalThis as unknown as { env?: { DB: unknown } }).env;
+    if (cfEnv?.DB) {
+      const db = getDb({ DB: cfEnv.DB } as Parameters<typeof getDb>[0]);
+      const githubId = (session.user as { id?: string })?.id;
+      if (githubId) {
+        const user = await db.getUserByGithubId(githubId);
+        if (user) {
+          await db.updateUserRepoBootstrapped(user.id, owner, repo);
+        }
       }
     }
+  } catch (dbError) {
+    console.warn("Failed to update bootstrapped flag:", dbError);
   }
 
   return NextResponse.json(

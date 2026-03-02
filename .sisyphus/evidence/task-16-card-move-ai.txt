@@ -1,0 +1,33 @@
+# Task 16 — Card Move AI Orchestration Evidence
+Date: 2026-03-02
+
+## File Modified
+app/api/issues/[number]/move/route.ts (163 lines)
+
+## Changes Made
+- Replaced `withOctokit` callback pattern with direct `getOctokitForRequest` to obtain
+  `AuthenticatedOctokit` reference accessible both for label swap AND for AI call
+- Added imports: getServerSession, authOptions, callAIAndComment, getUserKey, KVEnv,
+  decryptForUser, IssueSummary, AIProvider, WorkType, createUserClient
+- After label swap:
+  1. Constructs IssueSummary from fetched issue data
+  2. Gets userId = session.user.email
+  3. Captures CF env from globalThis.env (safe, may be undefined in local dev)
+  4. Fire-and-forget IIFE: tries gemini→claude→qwen order via getUserKey+decryptForUser
+     - No key found + cfEnv available → posts informational comment via createUserClient
+     - Key found → calls callAIAndComment (AI analyzes issue and posts comment)
+     - cfEnv unavailable (local dev) → silently skips
+  5. Returns NextResponse.json({ ok: true }) immediately — response NOT blocked on AI
+
+## Key Design Decisions
+- userId pattern: session.user.email (matches keys/route.ts convention)
+- CF env access: globalThis pattern (matches bootstrap/route.ts, no runtime change needed)
+- Fire-and-forget: IIFE with .catch(console.warn) — response returns before AI finishes
+- Informational comment only when cfEnv is available but no key — avoids false negatives in dev
+- issueSummary.status = body.toStatus (the NEW status post-move, correct for phase prompt)
+
+## Build Verification
+pnpm build: ✓ Compiled successfully
+- Zero TypeScript errors on changed file
+- LSP diagnostics: No errors found
+- Pre-existing warnings in other files (orchestrate/route.ts, context-builder.ts) unrelated

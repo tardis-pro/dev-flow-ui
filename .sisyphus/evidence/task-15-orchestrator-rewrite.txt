@@ -1,0 +1,71 @@
+# Task 15: Orchestrator Rewrite - callAIAndComment
+
+## Summary
+Rewrote `lib/orchestrator.ts` to replace the existing `dispatchOrchestrator()` function (which used GitHub Actions workflow_dispatch) with a new `callAIAndComment()` function that calls AI directly and posts the result as a GitHub issue comment.
+
+## Changes Made
+
+### lib/orchestrator.ts
+- **Removed**: `dispatchOrchestrator()` function that called GitHub Actions workflow_dispatch
+- **Removed**: `withOctokit` and `getEnv` imports (no longer needed)
+- **Added**: `callAIAndComment()` function with the following flow:
+  1. `buildContextForIssue()` - builds context for the issue
+  2. `getPromptForPhase()` - gets phase-specific prompt
+  3. `callAI()` - calls AI with user's API key
+  4. `postDevFlowComment()` - posts result as a GitHub comment
+
+### Types Exported
+- `OrchestratorParams` - parameters for the orchestrator
+  - `octokit`: AuthenticatedOctokit
+  - `owner`, `repo`: strings
+  - `issue`: IssueSummary
+  - `phase`: IssueStatus
+  - `userApiKey`: { provider: AIProvider; apiKey: string }
+- `OrchestratorResult` - return type
+  - `commentId`: number
+  - `commentUrl`: string
+
+### Phase Emojis and Titles
+- inception: 💡 Inception Analysis
+- discussion: 💬 Design Discussion
+- build: 🔌 Build Plan
+- review: 🔍 Code Review
+- done: ✅ Release Notes
+
+### Error Handling
+- AI errors are caught and posted as comments (not thrown)
+- Error messages are sanitized using `split().join("[REDACTED]")` pattern
+- API key is NEVER included in error messages
+
+### tests/services/orchestrator.test.ts
+- **Test 1**: Happy path - verifies AI is called and comment is posted with correct content
+- **Test 2**: AI error - verifies error is posted as comment without API key
+- **Test 3**: Verifies correct emoji and title for each phase
+
+## Verification Results
+
+### Build
+```
+pnpm build
+```
+Result: ✅ Compiled successfully
+
+### Tests
+```
+pnpm vitest run tests/services/orchestrator.test.ts
+```
+Result: ✅ 3 tests passed
+
+## Key Design Decisions
+
+1. **Error as Comment**: Instead of throwing errors, they are posted as GitHub comments so users can see what went wrong and retry from the dashboard.
+
+2. **Idempotency**: Uses `postDevFlowComment()` which includes idempotency key pattern: `{phase}-{issueNumber}-{timestamp}`
+
+3. **Error Sanitization**: Uses `split().join("[REDACTED]")` pattern which is safer than regex for API keys with special characters.
+
+4. **Max Tokens**: Set to 2000 for AI responses (appropriate for issue analysis comments).
+
+## Files Modified
+- `lib/orchestrator.ts` - complete rewrite (38 lines → 115 lines)
+- `tests/services/orchestrator.test.ts` - new file (228 lines)

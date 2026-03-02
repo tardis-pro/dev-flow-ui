@@ -1,0 +1,88 @@
+# Task 17: Conversation Reply API Endpoint
+
+## Summary
+Created `app/api/conversation/[number]/reply/route.ts` - a synchronous API endpoint for the Design phase chat that handles user messages and AI responses within GitHub issues.
+
+## Implementation Details
+
+### Endpoint
+- **Route**: `POST /api/conversation/[number]/reply`
+- **Dynamic param**: `[number]` - GitHub issue number
+
+### Request Body
+```typescript
+{
+  owner: string;    // Repository owner
+  repo: string;     // Repository name
+  message: string;  // User's message content
+}
+```
+
+### Response (Success)
+```typescript
+{
+  userComment: {
+    id: number;
+    url: string;
+  };
+  aiComment: {
+    id: number;
+    url: string;
+    content: string;
+  };
+}
+```
+
+### Error Responses
+- `401` - Unauthorized (no session)
+- `400` - Invalid issue number, missing fields, or no AI provider configured
+- `500` - Server error during processing
+
+### Flow
+1. **Auth check** - `getServerSession(authOptions)` → 401 if no session
+2. **Parse params** - Extract issue number from route, validate
+3. **Parse body** - Extract owner, repo, message
+4. **Get AI key** - Try gemini/claude/qwen in order from CF KV
+5. **Create Octokit** - User-authenticated GitHub client
+6. **Post user comment** - Direct to GitHub issue
+7. **Fetch issue details** - Get labels for phase detection
+8. **Parse phase** - Use `parseStatus()` from labels
+9. **Get all comments** - Build conversation history with AI/user detection
+10. **Build IssueSummary** - Full issue context
+11. **Build context** - `buildContextForIssue()` with conversation history
+12. **Get prompt** - `getPromptForPhase()` for current phase
+13. **Call AI** - Synchronous call (NOT fire-and-forget)
+14. **Post AI response** - As DevFlow comment with marker
+15. **Return response** - Both user and AI comment IDs/URLs
+
+### Key Imports
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { authOptions } from "@/lib/auth";
+import { createUserClient } from "@/lib/github";
+import { getUserKey, type KVEnv } from "@/lib/kv";
+import { decryptForUser } from "@/lib/crypto";
+import { callAI, type AIProvider } from "@/lib/ai-client";
+import { getPromptForPhase } from "@/lib/prompts/index";
+import { buildContextForIssue } from "@/lib/context-builder";
+import { postDevFlowComment, getDevFlowComments } from "@/lib/github-comments";
+import { parseStatus, WORK_TYPE_LABELS, type IssueStatus } from "@/lib/labels";
+import type { IssueSummary } from "@/lib/types";
+import type { ConversationMessage } from "@/lib/prompts/types";
+```
+
+### Design Decisions
+1. **Synchronous AI call** - User waits for AI response (per spec requirement)
+2. **AI provider fallback** - Tries gemini → claude → qwen
+3. **DevFlow marker detection** - Uses `getDevFlowComments()` which detects `<!-- devflow:` markers
+4. **Phase detection** - Uses existing `parseStatus()` from issue labels
+
+## Verification
+- `pnpm build` - ✅ PASSES
+- Route appears in build output: `ƒ /api/conversation/[number]/reply`
+- LSP diagnostics: No errors
+
+## File Location
+`app/api/conversation/[number]/reply/route.ts` (176 lines)

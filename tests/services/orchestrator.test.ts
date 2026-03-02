@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { callAIAndComment, type OrchestratorParams } from "@/lib/orchestrator";
 import type { AuthenticatedOctokit } from "@/lib/github";
-import type { PhasePrompt } from "@/lib/prompts/types";
+import type { PhasePrompt, PromptContext } from "@lib/prompts/types";
 
 // Mock dependencies
 vi.mock("@/lib/context-builder", () => ({
@@ -45,7 +45,7 @@ const MOCK_ISSUE = {
   repository: { owner: "owner", name: "repo" },
 };
 
-const MOCK_CONTEXT = {
+const MOCK_CONTEXT: PromptContext = {
   issue: {
     number: 42,
     title: "Test Issue",
@@ -56,11 +56,11 @@ const MOCK_CONTEXT = {
     owner: "owner",
     name: "repo",
     fileTree: [],
-    stack: {},
+    stack: { frameworks: [] },
     recentCommits: [],
     openPRs: [],
   },
-  phase: "inception",
+  phase: "inception" as const,
   relatedFiles: [],
 };
 

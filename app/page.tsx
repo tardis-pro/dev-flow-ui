@@ -1,7 +1,11 @@
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { fetchIssueSummaries, groupIssuesByStatus } from "@/lib/services/issues";
 import { fetchAccessibleRepos } from "@/lib/services/repos";
+import { getOnboardingState } from "@/lib/services/user";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { type D1Env } from "@/lib/db";
 import { sampleBoard } from "@/lib/fixtures";
 import { MainContent } from "@/components/MainContent";
 import { Topbar } from "@/components/Topbar";
@@ -32,6 +36,20 @@ export default async function Home({ searchParams }: PageProps) {
         <SignInPrompt />
       </main>
     );
+  }
+
+  // Check onboarding completion — redirect new users to the wizard
+  try {
+    const { env } = getCloudflareContext();
+    const userId = session.user?.email ?? "";
+    if (userId) {
+      const onboarding = await getOnboardingState(env as D1Env, userId);
+      if (!onboarding || onboarding.completed === 0) {
+        redirect("/onboarding");
+      }
+    }
+  } catch {
+    // CF context not available in local dev — skip redirect
   }
 
   const repoOptions = await fetchAccessibleRepos();
