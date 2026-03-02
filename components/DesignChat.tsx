@@ -92,8 +92,6 @@ export function DesignChat({ issueNumber, owner, repo, issueStatus, initialComme
       scrollToBottom();
     } catch (error) {
       console.error("Error sending reply:", error);
-      // Show toast error (simplified - would use sonner in real app)
-      console.log("Error sending reply");
     } finally {
       setIsLoading(false);
     }

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { X, Check, AlertTriangle, Loader2, GitBranch } from "lucide-react";
+import { Check, AlertTriangle, Loader2, GitBranch } from "lucide-react";
 
 export const runtime = "nodejs";
 
@@ -135,7 +135,7 @@ export default function SettingsPage() {
         setValidationState("error");
         setValidationMessage("Validation failed");
       }
-    } catch (error) {
+    } catch {
       setValidationState("error");
       setValidationMessage("Validation failed");
     }
@@ -171,7 +171,7 @@ export default function SettingsPage() {
         setValidationState("error");
         setValidationMessage(error.error || "Failed to save key");
       }
-    } catch (error) {
+    } catch {
       setValidationState("error");
       setValidationMessage("Failed to save key");
     } finally {
@@ -200,7 +200,7 @@ export default function SettingsPage() {
       } else {
         setValidationMessage("Failed to delete key");
       }
-    } catch (error) {
+    } catch {
       setValidationMessage("Failed to delete key");
     } finally {
       setLoading(false);
@@ -242,7 +242,7 @@ export default function SettingsPage() {
         const error = await response.json();
         setValidationMessage(error.error || "Failed to bootstrap");
       }
-    } catch (error) {
+    } catch {
       setValidationMessage("Failed to bootstrap");
     } finally {
       setLoading(false);
@@ -438,42 +438,26 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold">Settings</h1>
-            <p className="text-slate-400 mt-1">Configure AI providers and repository settings</p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => window.location.href = "/"}
-            className="rounded-full border-slate-700 hover:border-cyan-500/50"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="border-b border-slate-800 bg-slate-900/50">
+          <TabsTrigger value="keys">AI Keys</TabsTrigger>
+          <TabsTrigger value="repos">Repos</TabsTrigger>
+          <TabsTrigger value="workflow">Workflow</TabsTrigger>
+        </TabsList>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="border-b border-slate-800 bg-slate-900/50">
-            <TabsTrigger value="keys">AI Keys</TabsTrigger>
-            <TabsTrigger value="repos">Repos</TabsTrigger>
-            <TabsTrigger value="workflow">Workflow</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="keys">
-            {renderKeysTab()}
-          </TabsContent>
-          
-          <TabsContent value="repos">
-            {renderReposTab()}
-          </TabsContent>
-          
-          <TabsContent value="workflow">
-            {renderWorkflowTab()}
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent value="keys">
+          {renderKeysTab()}
+        </TabsContent>
+
+        <TabsContent value="repos">
+          {renderReposTab()}
+        </TabsContent>
+
+        <TabsContent value="workflow">
+          {renderWorkflowTab()}
+        </TabsContent>
+      </Tabs>
 
       {successToast && (
         <div className="fixed top-4 right-4 flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">

@@ -7,7 +7,6 @@ import type {
   ConversationMessage,
   RecentCommit,
 } from "@/lib/prompts/types";
-import type { IssueStatus } from "@/lib/labels";
 
 const MAX_FILE_TREE_SIZE = 500;
 const MAX_CONVERSATION_HISTORY = 15;
