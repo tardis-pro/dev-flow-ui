@@ -14,6 +14,7 @@ import { getUserKey, type KVEnv } from "@/lib/kv";
 import { decryptForUser } from "@/lib/crypto";
 import type { IssueSummary } from "@/lib/types";
 import type { AIProvider } from "@/lib/ai-client";
+export const runtime = "nodejs";
 
 type MovePayload = {
   toStatus: IssueStatus;

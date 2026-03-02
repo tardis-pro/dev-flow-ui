@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createUserClient } from "@/lib/github";
 import { getDb } from "@/lib/db";
+export const runtime = "nodejs";
 
 const DEVFLOW_LABELS = [
   { name: "status:inception", color: "1d76db" },
