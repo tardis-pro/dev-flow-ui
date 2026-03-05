@@ -45,33 +45,6 @@ export class AIError extends Error {
   }
 }
 
-async function generateGLMToken(apiKey: string): Promise<string> {
-  const dot = apiKey.lastIndexOf('.');
-  if (dot === -1) return apiKey;
-  const id = apiKey.slice(0, dot);
-  const secret = apiKey.slice(dot + 1);
-
-  const now = Date.now();
-  const toB64Url = (obj: unknown) =>
-    btoa(JSON.stringify(obj)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-
-  const header = toB64Url({ alg: 'HS256', sign_type: 'SIGN' });
-  const payload = toB64Url({ api_key: id, exp: now + 30_000, timestamp: now });
-  const signingInput = `${header}.${payload}`;
-
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingInput));
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
-    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-
-  return `${signingInput}.${sigB64}`;
-}
 
 const DEFAULT_MODELS: Record<AIProvider, string> = {
   gemini: 'gemini-2.5-flash',
@@ -218,7 +191,7 @@ const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
   },
 
   glm: {
-    endpoint: () => 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    endpoint: () => 'https://open.bigmodel.cn/api/coding/paas/v4/chat/completions',
     headers: (apiKey: string) => ({
       'content-type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
@@ -268,12 +241,10 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
 
   const config = PROVIDER_CONFIGS[provider];
 
-  const effectiveApiKey = provider === 'glm' ? await generateGLMToken(apiKey) : apiKey;
-
   let url = config.endpoint(model);
   if (provider === 'gemini') {
     const separator = url.includes('?') ? '&' : '?';
-    url = `${url}${separator}key=${encodeURIComponent(effectiveApiKey)}`;
+    url = `${url}${separator}key=${encodeURIComponent(apiKey)}`;
   }
 
   const body = config.buildBody(systemPrompt, userPrompt, model, maxTokens);
@@ -284,7 +255,7 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: config.headers(effectiveApiKey),
+      headers: config.headers(apiKey),
       body: JSON.stringify(body),
       signal: controller.signal,
     });
