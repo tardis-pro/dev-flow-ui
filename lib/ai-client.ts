@@ -76,13 +76,17 @@ function parseOpenAICompatResponse(
 ): { content: string; tokensUsed?: number } {
   const response = data as {
     choices?: Array<{
-      message?: { content?: string };
+      message?: { content?: string; reasoning_content?: string };
+      finish_reason?: string;
     }>;
     usage?: { total_tokens?: number };
     error?: { message?: string };
   };
-  const content = response.choices?.[0]?.message?.content;
-  if (!content) {
+  const firstChoice = response.choices?.[0];
+  const content = firstChoice?.message?.content?.trim();
+  const reasoningContent = firstChoice?.message?.reasoning_content?.trim();
+  const parsedContent = content || reasoningContent;
+  if (!parsedContent) {
     const detail = response.error?.message
       ?? JSON.stringify(data).slice(0, 200);
     throw new AIError(
@@ -90,8 +94,16 @@ function parseOpenAICompatResponse(
       provider,
     );
   }
+
+  if (!content && provider === 'glm' && firstChoice?.finish_reason === 'length') {
+    throw new AIError(
+      'GLM response was truncated before final content was produced; retry with a higher max token limit.',
+      provider,
+    );
+  }
+
   return {
-    content,
+    content: parsedContent,
     tokensUsed: response.usage?.total_tokens,
   };
 }

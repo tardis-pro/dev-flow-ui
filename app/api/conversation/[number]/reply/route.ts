@@ -118,12 +118,13 @@ export async function POST(
 
     const context = await buildContextForIssue(octokit, owner, repo, issueSummary, conversationHistory);
     const prompt = getPromptForPhase(phase, context);
+    const maxTokens = foundProvider === "glm" ? 4000 : 2000;
     const aiResult = await callAI({
       provider: foundProvider,
       apiKey: foundApiKey,
       systemPrompt: prompt.systemPrompt,
       userPrompt: prompt.userPrompt,
-      maxTokens: 2000,
+      maxTokens,
     });
 
     const idempotencyKey = `reply-${issueNumber}-${Date.now()}`;
