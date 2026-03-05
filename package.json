@@ -70,5 +70,14 @@
     "sharp",
     "unrs-resolver",
     "workerd"
-  ]
+  ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "rclone.js",
+      "sharp",
+      "unrs-resolver",
+      "workerd"
+    ]
+  }
 }
