@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,8 @@ interface WorkflowSettings {
 }
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("keys");
   const [keys, setKeys] = useState<ProviderKey[]>([]);
   const [repos, setRepos] = useState<Repo[]>([]);
@@ -47,15 +49,16 @@ export default function SettingsPage() {
 
 
   useEffect(() => {
-    if (!session?.user?.email) {
-      window.location.href = "/";
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.replace("/");
       return;
     }
 
     fetchKeys();
     fetchRepos();
     loadWorkflowSettings();
-  }, [session?.user?.email]);
+  }, [status]);
 
   const fetchKeys = async () => {
     try {
