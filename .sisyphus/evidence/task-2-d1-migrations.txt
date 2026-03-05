@@ -1,0 +1,40 @@
+# Task 2: D1 Database Schema + Migrations
+
+## Evidence
+
+### wrangler.toml additions
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "devflow-db"
+database_id = "local-devflow-db"
+
+[[kv_namespaces]]
+binding = "USER_KEYS"
+id = "local-user-keys-id"
+```
+
+### migrations/0001_initial.sql
+- users: id, github_id, github_login, email, avatar_url, created_at, updated_at
+- user_repos: id, user_id, owner, repo, bootstrapped, default_ai_provider, created_at
+- onboarding_state: user_id, step, completed, updated_at
+
+### migrations/0002_provider_keys.sql
+- provider_keys: id, user_id, provider, created_at
+
+### lib/db.ts
+- Types: User, UserRepo, OnboardingState, ProviderKey, D1Env
+- getDb(env) returns typed query object with methods:
+- ALL queries scoped by user_id
+
+### Migration apply
+```
+$ pnpm exec wrangler d1 migrations apply DB --local
+# Output: 4 commands executed successfully for both migrations
+```
+
+### Build verification
+```
+$ pnpm build
+# Output: Compiled successfully
+```

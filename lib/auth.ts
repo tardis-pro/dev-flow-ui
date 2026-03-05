@@ -26,9 +26,21 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, profile }) {
       if (account?.provider === "github" && account.access_token) {
         token.accessToken = account.access_token;
+      }
+      // Store GitHub identity in the JWT so API routes (with CF D1 access) can upsert the user.
+      // account is only non-null on the initial sign-in event.
+      if (account?.provider === "github" && profile) {
+        const githubProfile = profile as {
+          id?: number | string;
+          login?: string;
+          avatar_url?: string;
+        };
+        token.githubId = String(githubProfile.id ?? "");
+        token.login = githubProfile.login ?? "";
+        token.avatarUrl = githubProfile.avatar_url ?? null;
       }
       return token;
     },

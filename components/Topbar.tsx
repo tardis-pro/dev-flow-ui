@@ -16,9 +16,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, RefreshCw, X, Tag, GitPullRequest } from "lucide-react";
+import { Plus, RefreshCw, X, Tag, GitPullRequest, Settings } from "lucide-react";
 import { ISSUE_STATUSES, WORK_TYPE_LABELS } from "@/lib/labels";
 import type { IssueStatus, WorkType } from "@/lib/labels";
+import Link from "next/link";
 
 type RepoOption = {
   owner: string;
@@ -178,6 +179,16 @@ export function Topbar({
           <RefreshCw className="mr-2 h-3.5 w-3.5" />
           Update Permissions
         </Button>
+        <Link href="/settings">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full border-slate-700 hover:border-cyan-500/50"
+            title="Settings"
+          >
+            <Settings className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
         <div className="relative flex-1 min-w-[200px]">
           <Input
             placeholder="Search issues, labels, or assignees"

@@ -1,0 +1,51 @@
+Task 14 — Idempotent DevFlow Comment Writer
+===========================================
+Date: 2026-03-02
+
+## Files Created
+- lib/github-comments.ts (132 lines)
+- tests/services/github-comments.test.ts (198 lines)
+
+## Vitest Results
+ RUN  v3.2.4 /home/pronit/workspace/tardis/dev-flow-ui
+
+ ✓ tests/services/github-comments.test.ts (7 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  06:21:30
+   Duration  294ms (transform 36ms, setup 0ms, collect 31ms, tests 4ms, environment 0ms, prepare 67ms)
+
+## Build Results
+ ✓ Compiled successfully in 8.1s
+ ✓ Generating static pages (11/11)
+ ✓ Build completed with zero errors
+
+## Exports from lib/github-comments.ts
+- DevFlowComment type
+- PostedComment type
+- CommentSummary type
+- postDevFlowComment(octokit, owner, repo, comment) → Promise<PostedComment>
+- getDevFlowComments(octokit, owner, repo, issueNumber) → Promise<CommentSummary[]>
+
+## Idempotency mechanism
+- Hidden HTML marker: <!-- devflow:{idempotencyKey} -->
+- Marker format: <!-- devflow:{phase}-{issueNumber}-{timestamp} -->
+- listComments (per_page: 100) scanned before createComment
+- Duplicate key → returns {id, url, created: false} without posting
+
+## Test Coverage (7 tests)
+postDevFlowComment:
+  ✓ creates new comment when none with key exists
+  ✓ returns existing comment on duplicate call (idempotency)
+  ✓ different idempotency keys create separate comments
+
+getDevFlowComments:
+  ✓ marks DevFlow comments with isDevFlow: true
+  ✓ extracts correct phase from idempotency key (all 5 phases)
+  ✓ returns empty array when no comments exist
+  ✓ handles comment with no body gracefully
+
+## LSP Diagnostics
+- lib/github-comments.ts: No diagnostics found
+- tests/services/github-comments.test.ts: No diagnostics found

@@ -1,0 +1,56 @@
+# Task 10: Repo Context Engine API Evidence
+
+## File Created
+- `app/api/repo/[owner]/[repo]/context/route.ts`
+
+## Build Verification
+```
+$ pnpm build
+ ✓ Compiled successfully
+```
+
+## API Response Shape
+GET /api/repo/{owner}/{repo}/context → 200 with:
+```json
+{
+  "fileTree": ["src/", "src/components/", "src/lib/", "package.json", "tsconfig.json", ...],
+  "stack": {
+    "language": "JavaScript",
+    "packageManager": "pnpm",
+    "frameworks": ["react", "next"],
+    "testRunner": "vitest",
+    "buildTool": "vite"
+  },
+  "recentCommits": [
+    {"sha": "abc123", "message": "feat: add new feature", "author": "developer", "date": "2024-01-15T10:30:00Z"},
+    ...
+  ],
+  "openPRs": [
+    {"number": 42, "title": "Fix bug in auth", "author": "contributor"},
+    ...
+  ]
+}
+```
+
+## Features Implemented
+1. **Authentication**: Uses `getServerSession(authOptions)` → 401 if no session
+2. **User OAuth Token**: Uses `createUserClient()` for all GitHub API calls
+3. **File Tree (2 levels)**:
+   - Level 1: GitHub Trees API with `recursive: false` on root
+   - Level 2: Fetch each directory's contents individually
+4. **Stack Detection**:
+   - Language: Detects from manifest files (package.json, Cargo.toml, go.mod, etc.)
+   - Package Manager: Detects from lock files (pnpm-lock.yaml, yarn.lock, etc.)
+   - Frameworks: Parses package.json for react, next, vue, angular, express, fastify, hono, svelte, astro
+   - Test Runner: Detects vitest, jest, mocha, jasmine from package.json
+   - Build Tool: Detects vite, webpack, esbuild, rollup, turbo from package.json
+5. **Recent Commits**: Last 10 commits on default branch
+6. **Open PRs**: 5 most recently updated open PRs
+7. **Cache Headers**: `Cache-Control: max-age=300`
+8. **Error Handling**: 404 for non-existent repo, 500 for other errors
+
+## Code Quality
+- Zero LSP diagnostics
+- No `as any` or `@ts-ignore`
+- Uses existing types from `lib/prompts/types.ts`
+- Follows existing API route patterns

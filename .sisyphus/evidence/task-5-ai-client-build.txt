@@ -1,0 +1,26 @@
+=== TypeScript Check (ai-client.ts) ===
+$ npx tsc --noEmit lib/ai-client.ts
+(no output - clean)
+
+=== LSP Diagnostics ===
+No diagnostics found
+
+=== Full Build Status ===
+Build fails on pre-existing issue in lib/crypto.ts (not related to ai-client.ts):
+  Type error: Uint8Array<ArrayBufferLike> not assignable to BufferSource
+  Location: lib/crypto.ts:54:5
+
+=== API Key Leakage Check ===
+$ grep -n "apiKey" lib/ai-client.ts | grep -v "request.apiKey\|: string\|apiKey?\|type\|interface\|//\|param"
+
+Results show only legitimate usages:
+- Line 114: 'x-api-key': apiKey  (Claude header assignment - safe)
+- Line 149: Authorization: Bearer ${apiKey} (Qwen header assignment - safe)
+- Line 225: apiKey, (destructuring from request - safe)
+- All other matches are in example comments and test fixtures
+
+CONCLUSION: No API key leakage patterns found. API keys are only:
+1. Passed as function parameters
+2. Used in Authorization headers (standard pattern)
+3. Referenced in documentation/examples
+4. Never included in error messages or logs

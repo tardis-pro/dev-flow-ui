@@ -1,0 +1,39 @@
+# Task 7: Onboarding Store - Evidence
+
+## File Created
+- lib/stores/onboarding-store.ts (72 lines)
+
+## Implementation Details
+- Pattern: matches board-store.ts exactly
+- "use client" directive at top
+- Uses zustand create() pattern
+- Exports: useOnboardingStore, OnboardingStep type
+
+## OnboardingStep Type Values
+- github_connected
+- repo_selected
+- workflow_bootstrapped
+- keys_configured
+- done
+
+## Actions Implemented
+1. setStep(step) - Update current step
+2. completeOnboarding() - Mark completed, set step to "done"
+3. addRepo(owner, repo) - Add repo if not exists
+4. removeRepo(owner, repo) - Remove repo by owner/repo match
+5. setLoading(value) - Toggle loading state
+6. isOnboardingComplete() - Returns completed boolean
+7. reset() - Reset to initialState
+
+## TypeScript Verification
+- LSP diagnostics: NO ERRORS in onboarding-store.ts
+
+## Build Status
+- pnpm build: FAILED
+- FAILURE REASON: Pre-existing error in lib/crypto.ts:54 (Uint8Array type mismatch)
+- This error is NOT caused by onboarding-store.ts
+- crypto.ts is an untracked file in the repo (pre-existing)
+
+## Key Design Decision
+- UI state only - NO persistence/localStorage
+- D1 persistence is handled by lib/services/user.ts (separate concern)

@@ -1,0 +1,33 @@
+=== Web Crypto AES-GCM Utility Tests ===
+Date: 2026-03-02
+File: lib/crypto.ts
+
+Test 1: Roundtrip encryption/decryption
+  Input:    test-api-key-12345
+  Encrypted: l6SC603qOXi7yYnbDnQO...
+  Decrypted: test-api-key-12345
+  RESULT: PASS
+
+Test 2: Cross-user isolation
+  RESULT: PASS - cross-user decrypt correctly threw
+  Error: OperationError
+
+Test 3: Same plaintext, different users get different ciphertext
+  User A ciphertext: EnXSle9ME+cLEAgGFsbF...
+  User B ciphertext: FyW8w0P7XaK+F+GpBXyI...
+  RESULT: PASS (different ciphertexts)
+
+Test 4: Decrypt with correct user
+  RESULT: PASS
+
+=== All Tests Complete ===
+
+Implementation Details:
+- PBKDF2 iterations: 100000
+- Hash: SHA-256
+- Algorithm: AES-GCM
+- Key length: 256 bits
+- IV length: 12 bytes
+- Encoding: base64 (btoa/atob)
+- No Node.js crypto or Buffer imports
+- Uses globalThis.crypto.subtle for CF Workers compatibility

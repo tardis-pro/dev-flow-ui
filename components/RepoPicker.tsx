@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GitBranch, Search, Star, Clock, Zap, Command, Code2, GitFork } from "lucide-react";
+import { GitBranch, Search, Star, Clock, Zap, Command, Code2, GitFork, Settings } from "lucide-react";
 
 type Repository = {
   owner: string;
@@ -459,10 +460,14 @@ export function RepoPicker({ value, options, onChange }: RepoPickerProps) {
                 Select
               </span>
             </div>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700">ESC</kbd>
-              Close
-            </span>
+            <Link
+              href="/settings?tab=repos"
+              className="flex items-center gap-1 text-slate-400 hover:text-cyan-400 transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              <Settings className="h-3 w-3" />
+              Manage Repos
+            </Link>
           </div>
         </div>
       </DropdownMenuContent>

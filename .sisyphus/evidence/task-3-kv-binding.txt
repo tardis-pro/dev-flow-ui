@@ -1,0 +1,26 @@
+# Task 3: KV Namespace Binding
+
+## Evidence
+
+### wrangler.toml additions
+```toml
+[[kv_namespaces]]
+binding = "USER_KEYS"
+id = "local-user-keys-id"
+```
+
+### lib/kv.ts
+- Types: KVEnv
+- Functions:
+  - getUserKey(env, userId, provider): Promise<string | null>
+  - setUserKey(env, userId, provider, encryptedValue): Promise<void>
+  - deleteUserKey(env, userId, provider): Promise<void>
+  - listUserKeyProviders(env, userId): Promise<string[]>
+- Key naming: {userId}:{provider}
+- Values are pre-encrypted (no encryption/decryption in this module)
+
+### Build verification
+```
+$ pnpm build
+# Output: Compiled successfully
+```

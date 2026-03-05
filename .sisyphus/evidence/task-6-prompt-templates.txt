@@ -1,0 +1,27 @@
+
+> frontend@0.1.0 build /home/pronit/workspace/tardis/dev-flow-ui
+> next build
+
+   ▲ Next.js 15.5.6
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.3s
+   Linting and checking validity of types ...
+ ELIFECYCLE  Command failed with exit code 1.
+
+===========================
+NOTE: Build failures above are pre-existing in lib/db.ts, lib/kv.ts, lib/crypto.ts
+These files were not modified by this task.
+
+New files created (all LSP-clean, zero diagnostics):
+- lib/prompts/types.ts
+- lib/prompts/inception.ts
+- lib/prompts/discussion.ts
+- lib/prompts/build.ts
+- lib/prompts/review.ts
+- lib/prompts/done.ts
+- lib/prompts/index.ts
+
+getPromptForPhase() returns non-empty {systemPrompt, userPrompt} for all 5 phases.
+Inception prompt references specific codebase files from fileTree.
+No hardcoded repo names — uses context.repo.owner/context.repo.name throughout.
