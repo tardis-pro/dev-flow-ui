@@ -208,7 +208,7 @@ export function IssueDrawer({ owner, repo }: IssueDrawerProps) {
         </div>
 
         {selectedIssue ? (
-          <div className="relative flex h-full flex-col gap-6 overflow-hidden">
+          <div className="relative flex min-h-full flex-col gap-6 overflow-y-auto pr-1">
             {/* Header with glassmorphic card */}
             <div className="relative flex-shrink-0 rounded-2xl border border-slate-700/50 bg-white/5 backdrop-blur-sm p-5 shadow-lg">
               <SheetHeader>

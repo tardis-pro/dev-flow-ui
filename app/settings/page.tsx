@@ -32,7 +32,7 @@ interface WorkflowSettings {
 }
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("keys");
   const [keys, setKeys] = useState<ProviderKey[]>([]);
@@ -58,7 +58,7 @@ export default function SettingsPage() {
     fetchKeys();
     fetchRepos();
     loadWorkflowSettings();
-  }, [status]);
+  }, [router, status]);
 
   const fetchKeys = async () => {
     try {
