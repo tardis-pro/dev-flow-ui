@@ -16,7 +16,13 @@ export async function GET() {
     const repos = await fetchAccessibleRepos();
 
     return NextResponse.json({
-      repos: repos.map((r) => ({ owner: r.owner, repo: r.name })),
+      repos: repos.map((r) => ({
+        owner: r.owner,
+        repo: r.name,
+        description: r.description,
+        language: r.language,
+        isPrivate: r.private,
+      })),
     });
   } catch (error) {
     console.error("Failed to fetch repos:", error);

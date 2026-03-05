@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 
 type Repo = {
   owner: string;
-  name: string;
+  repo: string;
   description?: string | null;
   language?: string | null;
   isPrivate?: boolean;
@@ -201,18 +201,18 @@ export default function OnboardingPage() {
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {repos.map((repo) => {
-                  const key = `${repo.owner}/${repo.name}`;
-                  const isSelected = selectedRepos.some((r) => r.owner === repo.owner && r.repo === repo.name);
+                  const key = `${repo.owner}/${repo.repo}`;
+                  const isSelected = selectedRepos.some((r) => r.owner === repo.owner && r.repo === repo.repo);
                   return (
                     <label key={key} className="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800/30 cursor-pointer hover:border-cyan-500/50">
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => isSelected ? removeRepo(repo.owner, repo.name) : addRepo(repo.owner, repo.name)}
+                        onChange={() => isSelected ? removeRepo(repo.owner, repo.repo) : addRepo(repo.owner, repo.repo)}
                         className="rounded border-slate-600"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-100 truncate">{repo.owner}/{repo.name}</div>
+                        <div className="text-sm font-medium text-slate-100 truncate">{repo.owner}/{repo.repo}</div>
                         {repo.description && <div className="text-xs text-slate-400 truncate">{repo.description}</div>}
                       </div>
                       {repo.isPrivate && <Badge variant="outline" className="text-[10px] border-yellow-500/50 text-yellow-400">Private</Badge>}
