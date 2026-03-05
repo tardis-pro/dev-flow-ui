@@ -27,7 +27,7 @@ interface Repo {
 }
 
 interface WorkflowSettings {
-  defaultProvider: "gemini" | "claude" | "qwen";
+  defaultProvider: "gemini" | "claude" | "qwen" | "glm" | "minimax" | "mercury";
 }
 
 export default function SettingsPage() {
@@ -38,7 +38,7 @@ export default function SettingsPage() {
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings>({
     defaultProvider: "gemini",
   });
-  const [selectedProvider, setSelectedProvider] = useState<"gemini" | "claude" | "qwen">("gemini");
+  const [selectedProvider, setSelectedProvider] = useState<"gemini" | "claude" | "qwen" | "glm" | "minimax" | "mercury">("gemini");
   const [apiKey, setApiKey] = useState("");
   const [validationState, setValidationState] = useState<"idle" | "validating" | "error" | "valid">("idle");
   const [validationMessage, setValidationMessage] = useState("");
@@ -302,12 +302,15 @@ export default function SettingsPage() {
                 <select
                   id="provider"
                   value={selectedProvider}
-                  onChange={(e) => setSelectedProvider(e.target.value as "gemini" | "claude" | "qwen")}
+                  onChange={(e) => setSelectedProvider(e.target.value as "gemini" | "claude" | "qwen" | "glm" | "minimax" | "mercury")}
                   className="mt-1 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100"
                 >
                   <option value="gemini">Gemini</option>
                   <option value="claude">Claude</option>
                   <option value="qwen">Qwen</option>
+                  <option value="glm">GLM (Zhipu AI)</option>
+                  <option value="minimax">MiniMax</option>
+                  <option value="mercury">Mercury (Inception Labs)</option>
                 </select>
               </div>
               <div>
@@ -420,12 +423,15 @@ export default function SettingsPage() {
             <select
               id="defaultProvider"
               value={workflowSettings.defaultProvider}
-              onChange={(e) => saveWorkflowSettings({ defaultProvider: e.target.value as "gemini" | "claude" | "qwen" })}
+              onChange={(e) => saveWorkflowSettings({ defaultProvider: e.target.value as "gemini" | "claude" | "qwen" | "glm" | "minimax" | "mercury" })}
               className="mt-1 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100"
             >
               <option value="gemini">Gemini</option>
               <option value="claude">Claude</option>
               <option value="qwen">Qwen</option>
+              <option value="glm">GLM (Zhipu AI)</option>
+              <option value="minimax">MiniMax</option>
+              <option value="mercury">Mercury (Inception Labs)</option>
             </select>
           </div>
           

@@ -1,5 +1,4 @@
 import { Octokit } from "@octokit/rest";
-import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { throttling } from "@octokit/plugin-throttling";
 import { createAppAuth } from "@octokit/auth-app";
 import type { EndpointOptions } from "@octokit/types";
@@ -7,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
 
-const BaseOctokit = Octokit.plugin(paginateRest, throttling);
+const BaseOctokit = Octokit.plugin(throttling);
 
 const THROTTLE_OPTIONS = {
   onRateLimit: (

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { Board } from "@/components/Board";
 import { Topbar } from "@/components/Topbar";
+import { CreateIssueDialog } from "@/components/CreateIssueDialog";
 import { Button } from "@/components/ui/button";
 import { getCustomRepos } from "@/lib/services/custom-repos";
 import type { IssueBoardColumn } from "@/lib/types";
@@ -42,6 +43,7 @@ export function MainContent({
   const [columns, setColumns] = useState(initialColumns);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createIssueOpen, setCreateIssueOpen] = useState(false);
 
   // Load custom repos on mount
   useEffect(() => {
@@ -128,8 +130,26 @@ export function MainContent({
 
   const selectedRepo = owner && repo;
 
+  const handleIssueCreated = () => {
+    setCreateIssueOpen(false);
+    if (!owner || !repo) return;
+    fetch(`/api/issues?owner=${owner}&repo=${repo}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.columns) setColumns(data.columns); })
+      .catch(console.error);
+  };
+
   return (
     <>
+      {owner && repo && (
+        <CreateIssueDialog
+          open={createIssueOpen}
+          owner={owner}
+          repo={repo}
+          onClose={() => setCreateIssueOpen(false)}
+          onCreated={handleIssueCreated}
+        />
+      )}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <Topbar
@@ -138,6 +158,7 @@ export function MainContent({
             repoOptions={repoOptions}
             searchQuery={searchQuery}
             repoMetadata={repoMetadata}
+            onCreateIssue={owner && repo ? () => setCreateIssueOpen(true) : undefined}
           />
         </div>
         <Button

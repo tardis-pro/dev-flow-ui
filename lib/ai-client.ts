@@ -1,5 +1,5 @@
 /**
- * Unified multi-provider AI client supporting Gemini, Claude, and Qwen.
+ * Unified multi-provider AI client supporting Gemini, Claude, Qwen, GLM, MiniMax, and Mercury.
  *
  * @module lib/ai-client
  *
@@ -16,7 +16,7 @@
 // Types
 // ============================================================================
 
-export type AIProvider = 'gemini' | 'claude' | 'qwen';
+export type AIProvider = 'gemini' | 'claude' | 'qwen' | 'glm' | 'minimax' | 'mercury';
 
 export type AIRequest = {
   provider: AIProvider;
@@ -45,22 +45,45 @@ export class AIError extends Error {
   }
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
+async function generateGLMToken(apiKey: string): Promise<string> {
+  const dot = apiKey.lastIndexOf('.');
+  if (dot === -1) return apiKey;
+  const id = apiKey.slice(0, dot);
+  const secret = apiKey.slice(dot + 1);
+
+  const now = Date.now();
+  const toB64Url = (obj: unknown) =>
+    btoa(JSON.stringify(obj)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+  const header = toB64Url({ alg: 'HS256', sign_type: 'SIGN' });
+  const payload = toB64Url({ api_key: id, exp: now + 30_000, timestamp: now });
+  const signingInput = `${header}.${payload}`;
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingInput));
+  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+  return `${signingInput}.${sigB64}`;
+}
 
 const DEFAULT_MODELS: Record<AIProvider, string> = {
-  gemini: 'gemini-2.0-flash',
-  claude: 'claude-sonnet-4-20250514',
+  gemini: 'gemini-2.5-flash',
+  claude: 'claude-sonnet-4-6',
   qwen: 'qwen-plus',
+  glm: 'glm-4.7',
+  minimax: 'MiniMax-M2.5',
+  mercury: 'mercury-2',
 } as const;
 
 const DEFAULT_MAX_TOKENS = 4096;
 const REQUEST_TIMEOUT_MS = 60_000;
-
-// ============================================================================
-// Provider Implementations
-// ============================================================================
 
 interface ProviderConfig {
   endpoint: (model: string) => string;
@@ -74,6 +97,48 @@ interface ProviderConfig {
   parseResponse: (data: unknown) => { content: string; tokensUsed?: number };
 }
 
+function parseOpenAICompatResponse(
+  data: unknown,
+  provider: AIProvider,
+): { content: string; tokensUsed?: number } {
+  const response = data as {
+    choices?: Array<{
+      message?: { content?: string };
+    }>;
+    usage?: { total_tokens?: number };
+    error?: { message?: string };
+  };
+  const content = response.choices?.[0]?.message?.content;
+  if (!content) {
+    const detail = response.error?.message
+      ?? JSON.stringify(data).slice(0, 200);
+    throw new AIError(
+      `${provider} returned empty or malformed response: ${detail}`,
+      provider,
+    );
+  }
+  return {
+    content,
+    tokensUsed: response.usage?.total_tokens,
+  };
+}
+
+function buildOpenAICompatBody(
+  systemPrompt: string,
+  userPrompt: string,
+  model: string,
+  maxTokens: number,
+): unknown {
+  return {
+    model,
+    max_tokens: maxTokens,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  };
+}
+
 const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
   gemini: {
     endpoint: (model: string) =>
@@ -81,7 +146,7 @@ const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
     headers: () => ({
       'content-type': 'application/json',
     }),
-    buildBody: (systemPrompt, userPrompt, model, maxTokens) => ({
+    buildBody: (systemPrompt, userPrompt, _model, maxTokens) => ({
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       generationConfig: { maxOutputTokens: maxTokens },
@@ -148,77 +213,49 @@ const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
       'content-type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     }),
+    buildBody: buildOpenAICompatBody,
+    parseResponse: (data) => parseOpenAICompatResponse(data, 'qwen'),
+  },
+
+  glm: {
+    endpoint: () => 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    headers: (apiKey: string) => ({
+      'content-type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    }),
+    buildBody: buildOpenAICompatBody,
+    parseResponse: (data) => parseOpenAICompatResponse(data, 'glm'),
+  },
+
+  minimax: {
+    endpoint: () => 'https://api.minimax.io/v1/chat/completions',
+    headers: (apiKey: string) => ({
+      'content-type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    }),
+    buildBody: buildOpenAICompatBody,
+    parseResponse: (data) => parseOpenAICompatResponse(data, 'minimax'),
+  },
+
+
+  mercury: {
+    endpoint: () => 'https://api.inceptionlabs.ai/v1/chat/completions',
+    headers: (apiKey: string) => ({
+      'content-type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    }),
     buildBody: (systemPrompt, userPrompt, model, maxTokens) => ({
       model,
       max_tokens: maxTokens,
+      reasoning_effort: 'instant',
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` },
       ],
     }),
-    parseResponse: (data: unknown) => {
-      const response = data as {
-        choices?: Array<{
-          message?: { content?: string };
-        }>;
-        usage?: { total_tokens?: number };
-      };
-      const content = response.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new AIError(
-          'Qwen returned empty or malformed response',
-          'qwen',
-        );
-      }
-      return {
-        content,
-        tokensUsed: response.usage?.total_tokens,
-      };
-    },
+    parseResponse: (data) => parseOpenAICompatResponse(data, 'mercury'),
   },
 };
 
-// ============================================================================
-// Main Function
-// ============================================================================
-
-/**
- * Calls an AI provider with the given request parameters.
- *
- * @param request - The AI request configuration
- * @returns The AI response with content, provider, model, and optional token count
- * @throws AIError if the request fails or returns malformed data
- *
- * @example
- * // Basic usage with Gemini
- * const response = await callAI({
- *   provider: 'gemini',
- *   apiKey: 'your-api-key',
- *   systemPrompt: 'You are a helpful coding assistant.',
- *   userPrompt: 'Explain TypeScript generics.',
- * });
- * console.log(response.content);
- *
- * @example
- * // Using Claude with custom model
- * const response = await callAI({
- *   provider: 'claude',
- *   apiKey: 'your-api-key',
- *   model: 'claude-3-5-sonnet-20241022',
- *   systemPrompt: 'You are a code reviewer.',
- *   userPrompt: 'Review this PR...',
- *   maxTokens: 8192,
- * });
- *
- * @example
- * // Using Qwen
- * const response = await callAI({
- *   provider: 'qwen',
- *   apiKey: 'your-api-key',
- *   systemPrompt: 'Translate to Chinese.',
- *   userPrompt: 'Hello, world!',
- * });
- */
 export async function callAI(request: AIRequest): Promise<AIResponse> {
   const {
     provider,
@@ -231,31 +268,31 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
 
   const config = PROVIDER_CONFIGS[provider];
 
-  // Build URL - Gemini needs API key in query string
+  const effectiveApiKey = provider === 'glm' ? await generateGLMToken(apiKey) : apiKey;
+
   let url = config.endpoint(model);
   if (provider === 'gemini') {
     const separator = url.includes('?') ? '&' : '?';
-    url = `${url}${separator}key=${encodeURIComponent(apiKey)}`;
+    url = `${url}${separator}key=${encodeURIComponent(effectiveApiKey)}`;
   }
 
-  // Build request body
   const body = config.buildBody(systemPrompt, userPrompt, model, maxTokens);
 
-  // Setup timeout with AbortController
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: config.headers(apiKey),
+      headers: config.headers(effectiveApiKey),
       body: JSON.stringify(body),
       signal: controller.signal,
     });
 
     if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
       throw new AIError(
-        `${provider.charAt(0).toUpperCase() + provider.slice(1)} API error: ${response.status} ${response.statusText}`,
+        `${provider.charAt(0).toUpperCase() + provider.slice(1)} API error: ${response.status} ${response.statusText} — ${errorBody.slice(0, 300)}`,
         provider,
         response.status,
       );
@@ -284,7 +321,7 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
       );
     }
 
-    // Handle network/parse errors - NEVER include apiKey in message
+    // Handle network/parse errors — NEVER include apiKey in message
     const message =
       error instanceof Error ? error.message : 'Unknown error occurred';
     throw new AIError(
@@ -295,4 +332,3 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
     clearTimeout(timeoutId);
   }
 }
-

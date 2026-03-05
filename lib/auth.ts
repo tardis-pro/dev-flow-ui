@@ -44,10 +44,13 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
+      async session({ session, token }) {
       if (token.accessToken && session.user) {
         session.accessToken = token.accessToken as string;
       }
+      session.githubId = token.githubId;
+      session.login = token.login;
+      session.avatarUrl = token.avatarUrl;
       return session;
     },
   },

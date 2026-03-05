@@ -44,7 +44,7 @@ export default function OnboardingPage() {
   const [bootstrapLoading, setBootstrapLoading] = useState<Record<string, boolean>>({});
 
   // Step 4: AI keys
-  const [provider, setProvider] = useState<"gemini" | "claude" | "qwen">("gemini");
+  const [provider, setProvider] = useState<"gemini" | "claude" | "qwen" | "glm" | "minimax" | "mercury">("gemini");
   const [apiKey, setApiKey] = useState("");
   const [validationState, setValidationState] = useState<ValidationState>("idle");
   const [validationMessage, setValidationMessage] = useState("");
@@ -307,12 +307,15 @@ export default function OnboardingPage() {
                 <select
                   id="provider"
                   value={provider}
-                  onChange={(e) => setProvider(e.target.value as "gemini" | "claude" | "qwen")}
+                  onChange={(e) => setProvider(e.target.value as "gemini" | "claude" | "qwen" | "glm" | "minimax" | "mercury")}
                   className="mt-1 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100"
                 >
                   <option value="gemini">Gemini</option>
                   <option value="claude">Claude</option>
                   <option value="qwen">Qwen</option>
+                  <option value="glm">GLM (Zhipu AI)</option>
+                  <option value="minimax">MiniMax</option>
+                  <option value="mercury">Mercury (Inception Labs)</option>
                 </select>
               </div>
               <div>

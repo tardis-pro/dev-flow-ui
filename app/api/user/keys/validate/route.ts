@@ -5,7 +5,7 @@ import { callAI, AIProvider } from "@/lib/ai-client";
 
 export const runtime = "nodejs";
 
-const ALLOWED_PROVIDERS: ReadonlyArray<AIProvider> = ["gemini", "claude", "qwen"] as const;
+const ALLOWED_PROVIDERS: ReadonlyArray<AIProvider> = ["gemini", "claude", "qwen", "glm", "minimax", "mercury"] as const;
 
 function isAllowedProvider(value: unknown): value is AIProvider {
   return typeof value === "string" && (ALLOWED_PROVIDERS as ReadonlyArray<string>).includes(value);

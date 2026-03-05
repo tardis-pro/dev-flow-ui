@@ -12,31 +12,20 @@ import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
-import type { HTMLAttributes } from "react";
-
 const markdownComponents: Components = {
-  h1: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h1 className="text-2xl font-semibold text-slate-100" {...props}>
-      {children}
-    </h1>
+  h1: ({ children }) => (
+    <h1 className="text-2xl font-semibold text-slate-100">{children}</h1>
   ),
-  h2: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h2 className="mt-6 text-xl font-semibold text-slate-100" {...props}>
-      {children}
-    </h2>
+  h2: ({ children }) => (
+    <h2 className="mt-6 text-xl font-semibold text-slate-100">{children}</h2>
   ),
-  pre: ({ children, ...props }: HTMLAttributes<HTMLPreElement>) => (
-    <pre
-      className="mt-4 overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-100"
-      {...props}
-    >
+  pre: ({ children }) => (
+    <pre className="mt-4 overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-100">
       {children}
     </pre>
   ),
-  code: ({ children, ...props }: HTMLAttributes<HTMLElement>) => (
-    <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm" {...props}>
-      {children}
-    </code>
+  code: ({ children }) => (
+    <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm">{children}</code>
   ),
 };
 

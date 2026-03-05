@@ -32,7 +32,7 @@ export function DesignChat({ issueNumber, owner, repo, issueStatus, initialComme
   const [comments, setComments] = useState<CommentSummary[]>(initialComments || []);
   const [replyText, setReplyText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialComments && initialComments.length > 0) {
@@ -41,9 +41,7 @@ export function DesignChat({ issueNumber, owner, repo, issueStatus, initialComme
   }, [initialComments]);
 
   const scrollToBottom = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSend = async () => {
@@ -122,7 +120,7 @@ export function DesignChat({ issueNumber, owner, repo, issueStatus, initialComme
       </div>
 
       {/* Chat messages */}
-      <ScrollArea className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
           {comments.length === 0 ? (
             <div className="text-center text-slate-400 py-8">
@@ -167,6 +165,7 @@ export function DesignChat({ issueNumber, owner, repo, issueStatus, initialComme
             </div>
             ))
           )}
+          <div ref={bottomRef} />
         </div>
       </ScrollArea>
 

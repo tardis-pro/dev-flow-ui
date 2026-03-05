@@ -1,7 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { createUserClient } from "@/lib/github";
 import { ISSUE_STATUSES, type IssueStatus } from "@/lib/labels";
 import { fetchIssueSummaries, groupIssuesByStatus } from "@/lib/services/issues";
 import { sampleBoard } from "@/lib/fixtures";
+
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.accessToken) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: { owner?: string; repo?: string; title?: string; body?: string; labels?: string[] };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const { owner, repo, title, body: issueBody, labels } = body;
+  if (!owner || !repo || !title?.trim()) {
+    return NextResponse.json({ error: "owner, repo, and title are required" }, { status: 400 });
+  }
+
+  try {
+    const octokit = await createUserClient();
+    const { data } = await octokit.rest.issues.create({
+      owner,
+      repo,
+      title: title.trim(),
+      body: issueBody ?? "",
+      labels: labels ?? ["status:inception"],
+    });
+
+    return NextResponse.json({
+      number: data.number,
+      url: data.html_url,
+      title: data.title,
+    }, { status: 201 });
+  } catch (error) {
+    console.error("Failed to create issue:", error);
+    return NextResponse.json({ error: "Failed to create issue" }, { status: 500 });
+  }
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
