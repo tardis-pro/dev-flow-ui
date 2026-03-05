@@ -12,8 +12,8 @@ NEXTAUTH_URL = "https://code.tardis.digital"
 [[d1_databases]]
 binding = "DB"
 database_name = "devflow-db"
-database_id = "local-devflow-db"
+database_id = "f31399e8-8e40-457f-86e8-669e46091e29"
 
 [[kv_namespaces]]
 binding = "USER_KEYS"
-id = "local-user-keys-id"
+id = "ec28be3e6c0d408babe6d0b764cf8f67"
